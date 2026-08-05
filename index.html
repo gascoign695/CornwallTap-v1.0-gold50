@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CornwallTap</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>🌊 CornwallTap</h1>
+    <div class="tagline">Know Cornwall? Prove it.</div>
+</header>
+
+<div id="modeControls">
+
+    <button
+        id="normalModeButton"
+        class="mode-button active-mode"
+    >
+        Normal Game
+    </button>
+
+    <button
+        id="dailyModeButton"
+        class="mode-button"
+    >
+        Daily Challenge
+    </button>
+
+</div>
+
+<div id="info">
+
+    <div id="roundInfo">
+        Round
+        <strong>
+            <span id="round">1</span>/10
+        </strong>
+    </div>
+
+    <div id="findBox">
+
+        <div class="find-label">
+            Find
+        </div>
+
+        <h2 id="target"></h2>
+
+        <div id="category"></div>
+
+    </div>
+
+    <div id="scoreBox">
+        Score
+
+        <strong id="score">
+            0
+        </strong>
+    </div>
+
+</div>
+
+<div id="map"></div>
+
+<div
+    id="resultModal"
+    class="result-modal"
+    aria-hidden="true"
+>
+    <div class="result-modal-content">
+
+        <div id="result"></div>
+
+        <button id="nextButton" disabled>
+            Continue
+        </button>
+
+    </div>
+</div>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+<script src="js/locations.js"></script>
+<script src="js/game.js"></script>
+
+</body>
+
+</html>
