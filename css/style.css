@@ -129,7 +129,8 @@ button:disabled {
 }
 
 .primary-choice,
-.secondary-choice {
+.secondary-choice,
+.tertiary-choice {
     width: 100%;
     margin-top: 12px;
 }
@@ -137,6 +138,12 @@ button:disabled {
 .secondary-choice,
 .secondary-action {
     background: #5f7d84;
+}
+
+.tertiary-choice {
+    border: 2px solid #b9d2d7;
+    background: white;
+    color: var(--deep-sea);
 }
 
 .daily-status {
@@ -521,6 +528,91 @@ button:disabled {
     transform: translate(-50%, 0);
 }
 
+
+.stats-screen {
+    min-height: calc(100vh - 75px);
+    padding: 24px 14px;
+    background: var(--pale-sea);
+}
+
+.stats-page {
+    width: min(720px, 100%);
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 8px 30px rgba(0, 59, 77, 0.15);
+}
+
+.stats-page h2 {
+    margin: 7px 0 20px;
+    color: var(--deep-sea);
+    font-size: 30px;
+}
+
+.stats-back-button {
+    display: block;
+    margin-bottom: 18px;
+    padding: 7px 11px;
+    background: transparent;
+    color: var(--deep-sea);
+    font-size: 14px;
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.profile-stat {
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px;
+    border-radius: 12px;
+    background: #eef7f8;
+}
+
+.profile-stat.featured {
+    background: #fff4c2;
+}
+
+.profile-stat-icon {
+    margin-bottom: 5px;
+    font-size: 22px;
+}
+
+.profile-stat-value {
+    color: var(--deep-sea);
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.profile-stat-label {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.stats-actions {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e1ebed;
+}
+
+.danger-button {
+    background: #9b3a3a;
+    font-size: 14px;
+}
+
+.stats-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
 @media (max-width: 650px) {
     header h1 {
         font-size: 25px;
@@ -532,6 +624,28 @@ button:disabled {
 
     .start-card h2 {
         font-size: 25px;
+    }
+
+    .stats-page {
+        padding: 18px 12px;
+    }
+
+    .stats-page h2 {
+        font-size: 25px;
+    }
+
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .profile-stat {
+        min-height: 100px;
+        padding: 11px;
+    }
+
+    .profile-stat-value {
+        font-size: 23px;
     }
 
     #challengeBar {

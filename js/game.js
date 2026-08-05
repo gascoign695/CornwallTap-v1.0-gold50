@@ -63,6 +63,21 @@ const dailyStartButton =
 const practiceStartButton =
     document.getElementById("practiceStartButton");
 
+const statsButton =
+    document.getElementById("statsButton");
+
+const statsScreen =
+    document.getElementById("statsScreen");
+
+const statsBackButton =
+    document.getElementById("statsBackButton");
+
+const statsOverview =
+    document.getElementById("statsOverview");
+
+const resetStatsButton =
+    document.getElementById("resetStatsButton");
+
 const dailyStatusElement =
     document.getElementById("dailyStatus");
 
@@ -317,6 +332,299 @@ function displayDate() {
 }
 
 
+const statisticsStorageKey =
+    "cornwallTapStatistics-v2-daily-only";
+
+
+function defaultStatistics() {
+    return {
+        gamesPlayed: 0,
+        dailyCompleted: 0,
+        practiceCompleted: 0,
+        totalScore: 0,
+        bestScore: 0,
+        perfectRounds: 0,
+        totalDistanceKm: 0,
+        totalGuesses: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastDailyDate: null
+    };
+}
+
+
+function getStatistics() {
+    const saved =
+        localStorage.getItem(
+            statisticsStorageKey
+        );
+
+    if (!saved) {
+        return defaultStatistics();
+    }
+
+    try {
+        return {
+            ...defaultStatistics(),
+            ...JSON.parse(saved)
+        };
+    } catch (error) {
+        console.warn(
+            "Stored statistics could not be read.",
+            error
+        );
+
+        return defaultStatistics();
+    }
+}
+
+
+function saveStatistics(statistics) {
+    localStorage.setItem(
+        statisticsStorageKey,
+        JSON.stringify(statistics)
+    );
+}
+
+
+function daysBetweenDateKeys(
+    earlierDateKey,
+    laterDateKey
+) {
+    const earlier =
+        new Date(`${earlierDateKey}T00:00:00Z`);
+
+    const later =
+        new Date(`${laterDateKey}T00:00:00Z`);
+
+    return Math.round(
+        (later - earlier) /
+        (24 * 60 * 60 * 1000)
+    );
+}
+
+
+function updateDailyStreak(statistics) {
+    const today =
+        currentDateKey();
+
+    if (statistics.lastDailyDate === today) {
+        return false;
+    }
+
+    if (!statistics.lastDailyDate) {
+        statistics.currentStreak = 1;
+    } else {
+        const gap =
+            daysBetweenDateKeys(
+                statistics.lastDailyDate,
+                today
+            );
+
+        statistics.currentStreak =
+            gap === 1
+                ? statistics.currentStreak + 1
+                : 1;
+    }
+
+    statistics.longestStreak =
+        Math.max(
+            statistics.longestStreak,
+            statistics.currentStreak
+        );
+
+    statistics.lastDailyDate =
+        today;
+
+    return true;
+}
+
+
+function recordCompletedGame() {
+    const statistics =
+        getStatistics();
+
+    /*
+    Practice Mode only contributes to the Practice Games
+    counter. It never changes Daily scores, averages,
+    distances, perfect rounds or streaks.
+    */
+    if (gameMode === "practice") {
+        statistics.practiceCompleted += 1;
+        saveStatistics(statistics);
+        return;
+    }
+
+    /*
+    Localhost permits replaying today's Daily Challenge for
+    testing, but only the first completion can affect stats.
+    */
+    if (
+        statistics.lastDailyDate ===
+        currentDateKey()
+    ) {
+        return;
+    }
+
+    statistics.gamesPlayed += 1;
+    statistics.dailyCompleted += 1;
+    statistics.totalScore += score;
+
+    statistics.bestScore =
+        Math.max(
+            statistics.bestScore,
+            score
+        );
+
+    statistics.perfectRounds +=
+        perfectGuesses();
+
+    statistics.totalDistanceKm +=
+        roundDistances.reduce(
+            (total, distance) =>
+                total + distance,
+            0
+        );
+
+    statistics.totalGuesses +=
+        roundDistances.length;
+
+    updateDailyStreak(statistics);
+    saveStatistics(statistics);
+}
+
+
+function averageStoredScore(statistics) {
+    if (statistics.gamesPlayed === 0) {
+        return 0;
+    }
+
+    return Math.round(
+        statistics.totalScore /
+        statistics.gamesPlayed
+    );
+}
+
+
+function averageStoredDistance(statistics) {
+    if (statistics.totalGuesses === 0) {
+        return 0;
+    }
+
+    return (
+        statistics.totalDistanceKm /
+        statistics.totalGuesses
+    );
+}
+
+
+function statisticsCard(
+    icon,
+    value,
+    label,
+    featured = false
+) {
+    return `
+        <div class="profile-stat ${
+            featured ? "featured" : ""
+        }">
+            <div class="profile-stat-icon">
+                ${icon}
+            </div>
+
+            <div class="profile-stat-value">
+                ${value}
+            </div>
+
+            <div class="profile-stat-label">
+                ${label}
+            </div>
+        </div>
+    `;
+}
+
+
+function renderStatistics() {
+    const statistics =
+        getStatistics();
+
+    statsOverview.innerHTML = [
+        statisticsCard(
+            "🔥",
+            statistics.currentStreak,
+            "Current daily streak",
+            true
+        ),
+        statisticsCard(
+            "🏆",
+            `${statistics.bestScore}/500`,
+            "Best Daily score",
+            true
+        ),
+        statisticsCard(
+            "📅",
+            statistics.dailyCompleted,
+            "Daily games completed"
+        ),
+        statisticsCard(
+            "🗺️",
+            statistics.dailyCompleted * totalRounds,
+            "Daily rounds played"
+        ),
+        statisticsCard(
+            "🎯",
+            statistics.practiceCompleted,
+            "Practice games"
+        ),
+        statisticsCard(
+            "📈",
+            `${averageStoredScore(
+                statistics
+            )}/500`,
+            "Average Daily score"
+        ),
+        statisticsCard(
+            "⭐",
+            statistics.perfectRounds,
+            "Perfect Daily rounds"
+        ),
+        statisticsCard(
+            "📍",
+            displayDistance(
+                averageStoredDistance(
+                    statistics
+                )
+            ),
+            "Average Daily guess distance"
+        ),
+        statisticsCard(
+            "🌟",
+            statistics.longestStreak,
+            "Longest daily streak"
+        )
+    ].join("");
+}
+
+
+function showStatisticsScreen() {
+    hideResultModal();
+
+    startScreen.classList.add("hidden");
+    gameScreen.classList.add("hidden");
+    statsScreen.classList.remove("hidden");
+
+    renderStatistics();
+}
+
+
+function hideStatisticsScreen() {
+    statsScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+
+    updateStartScreen();
+}
+
+
 function dailyStorageKey() {
     return `cornwallTapDailyResult-${currentDateKey()}`;
 }
@@ -516,6 +824,7 @@ function resetGameState() {
 
 function showGameScreen() {
     startScreen.classList.add("hidden");
+    statsScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
 
     setTimeout(
@@ -530,6 +839,7 @@ function showStartScreen() {
     clearMapReveal();
 
     gameScreen.classList.add("hidden");
+    statsScreen.classList.add("hidden");
     startScreen.classList.remove("hidden");
 
     updateStartScreen();
@@ -1003,6 +1313,8 @@ function showFinalResult() {
             .map(scoreSquare)
             .join("");
 
+    recordCompletedGame();
+
     if (gameMode === "daily") {
         saveDailyResult();
     }
@@ -1239,6 +1551,42 @@ practiceStartButton.addEventListener(
     "click",
     function () {
         startMode("practice");
+    }
+);
+
+
+statsButton.addEventListener(
+    "click",
+    showStatisticsScreen
+);
+
+
+statsBackButton.addEventListener(
+    "click",
+    hideStatisticsScreen
+);
+
+
+resetStatsButton.addEventListener(
+    "click",
+    function () {
+        const confirmed =
+            window.confirm(
+                "Reset all CornwallTap statistics on this device?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        localStorage.removeItem(
+            statisticsStorageKey
+        );
+
+        renderStatistics();
+        showToast(
+            "Statistics reset"
+        );
     }
 );
 
