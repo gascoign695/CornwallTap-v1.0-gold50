@@ -23,59 +23,114 @@
 
 <header>
     <h1>🌊 CornwallTap</h1>
-    <div class="tagline">Know Cornwall? Prove it.</div>
+    <div class="tagline">Five places. One Cornwall challenge.</div>
 </header>
 
-<div id="modeControls">
+<main>
 
-    <button
-        id="normalModeButton"
-        class="mode-button active-mode"
-    >
-        Normal Game
-    </button>
+    <section id="startScreen" class="start-screen">
 
-    <button
-        id="dailyModeButton"
-        class="mode-button"
-    >
-        Daily Challenge
-    </button>
+        <div class="start-card">
 
-</div>
+            <div class="eyebrow">DAILY CORNWALL MAP CHALLENGE</div>
 
-<div id="info">
+            <div class="start-date" id="startDate"></div>
 
-    <div id="roundInfo">
-        Round
-        <strong>
-            <span id="round">1</span>/10
-        </strong>
-    </div>
+            <h2>How well do you know Cornwall?</h2>
 
-    <div id="findBox">
+            <p class="start-intro">
+                Five locations. Five map taps. The challenge
+                gets harder as you travel around the county.
+            </p>
 
-        <div class="find-label">
-            Find
+            <div class="feature-row" aria-label="Game features">
+                <span>🛰️ Satellite map</span>
+                <span>🎯 500 points</span>
+                <span>⏱️ About 3 minutes</span>
+            </div>
+
+            <button id="dailyStartButton" class="primary-choice">
+                📅 Play Today's Challenge
+            </button>
+
+            <div id="dailyStatus" class="daily-status"></div>
+
+            <button id="practiceStartButton" class="secondary-choice">
+                🎯 Practice Mode
+            </button>
+
+            <div class="mode-explainer">
+                <p class="mode-note">
+                    <strong>Daily:</strong> identical locations for every
+                    player, with one scored result per day.
+                </p>
+
+                <p class="mode-note">
+                    <strong>Practice:</strong> random locations and
+                    unlimited games.
+                </p>
+            </div>
+
         </div>
 
-        <h2 id="target"></h2>
+    </section>
 
-        <div id="category"></div>
 
-    </div>
+    <section id="gameScreen" class="game-screen hidden">
 
-    <div id="scoreBox">
-        Score
+        <div id="challengeBar">
+            <button id="backButton" class="back-button">
+                ← Modes
+            </button>
 
-        <strong id="score">
-            0
-        </strong>
-    </div>
+            <span id="modeLabel">Today's Challenge</span>
 
-</div>
+            <span id="challengeDate"></span>
+        </div>
 
-<div id="map"></div>
+        <div id="info">
+
+            <div id="roundInfo">
+                Round
+                <strong>
+                    <span id="round">1</span>/5
+                </strong>
+            </div>
+
+            <div id="findBox">
+
+                <div class="find-label">
+                    Find
+                </div>
+
+                <h2 id="target"></h2>
+
+                <div id="category"></div>
+
+            </div>
+
+            <div id="scoreBox">
+                Score
+
+                <strong id="score">
+                    0
+                </strong>
+
+                <span class="score-maximum">/500</span>
+            </div>
+
+        </div>
+
+        <div id="progressTrack" aria-label="Challenge progress">
+            <div id="progressFill"></div>
+        </div>
+
+        <div id="map"></div>
+
+    </section>
+
+</main>
+
 
 <div
     id="resultModal"
@@ -86,12 +141,32 @@
 
         <div id="result"></div>
 
+        <div id="finalActions" class="final-actions hidden">
+
+            <button id="shareButton">
+                Share Score
+            </button>
+
+            <button id="playAgainButton" class="secondary-action hidden">
+                Practice Again
+            </button>
+
+            <button id="returnButton" class="secondary-action">
+                Back to Modes
+            </button>
+
+        </div>
+
         <button id="nextButton" disabled>
             Continue
         </button>
 
     </div>
 </div>
+
+
+<div id="toast" class="toast" aria-live="polite"></div>
+
 
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
