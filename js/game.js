@@ -1,5 +1,5 @@
 /*
-CornwallTap v2.2 Gold 70 - Production
+CornwallTap v2.3.1 - Delight Update
 
 Modes:
 - Daily Challenge: same five locations for everyone, one scored attempt per day.
@@ -19,6 +19,29 @@ const difficultyBands = [
     { min: 5, max: 6 },
     { min: 7, max: 8 },
     { min: 9, max: 10 }
+];
+
+const roundStages = [
+    {
+        name: "Warm-up",
+        share: "Warm-up"
+    },
+    {
+        name: "Finding your feet",
+        share: "Finding your feet"
+    },
+    {
+        name: "Local knowledge",
+        share: "Local knowledge"
+    },
+    {
+        name: "Expert territory",
+        share: "Expert territory"
+    },
+    {
+        name: "The Legend Round",
+        share: "Legend Round"
+    }
 ];
 
 
@@ -204,6 +227,9 @@ const categoryElement =
 
 const roundElement =
     document.getElementById("round");
+
+const roundStageElement =
+    document.getElementById("roundStage");
 
 const scoreElement =
     document.getElementById("score");
@@ -588,6 +614,101 @@ function cornwallDateParts() {
         month: values.month,
         day: values.day
     };
+}
+
+
+
+function roundStage(roundNumber) {
+    return roundStages[roundNumber - 1] || {
+        name: `Round ${roundNumber}`,
+        share: `Round ${roundNumber}`
+    };
+}
+
+
+function finalCelebration(finalScore) {
+    if (finalScore >= 450) {
+        return {
+            emoji: "👑🌊👑",
+            ribbon: "An exceptional Cornwall performance",
+            message:
+                "You navigated Cornwall like a true Kernow legend. That is a score worth sharing."
+        };
+    }
+
+    if (finalScore >= 350) {
+        return {
+            emoji: "🏆🌊🏆",
+            ribbon: "Brilliant local knowledge",
+            message:
+                "You knew Cornwall extremely well today. Tomorrow's challenge is waiting."
+        };
+    }
+
+    if (finalScore >= 250) {
+        return {
+            emoji: "🗺️✨🗺️",
+            ribbon: "A strong trip around Cornwall",
+            message:
+                "You found plenty of the right areas and built a score to be proud of."
+        };
+    }
+
+    if (finalScore >= 150) {
+        return {
+            emoji: "🌊🧭🌊",
+            ribbon: "A proper Cornish adventure",
+            message:
+                "Some places landed, some will be easier next time. Come back tomorrow and beat it."
+        };
+    }
+
+    return {
+        emoji: "🧭🌊🧭",
+        ribbon: "Five new places explored",
+        message:
+            "Today was a tough route around Cornwall. You now know five more places for next time."
+    };
+}
+
+
+function shareScoreEmoji(points) {
+    if (points >= 95) return "🎯";
+    if (points >= 80) return "🟢";
+    if (points >= 60) return "🟡";
+    if (points >= 40) return "🟠";
+    return "🔴";
+}
+
+
+function shareRoundLine(scores) {
+    return scores
+        .map(
+            points =>
+                `${points}${shareScoreEmoji(points)}`
+        )
+        .join(" ");
+}
+
+
+function compactShareTitle(finalScore) {
+    if (finalScore >= 450) return "Kernow Legend";
+    if (finalScore >= 350) return "Kernow Expert";
+    if (finalScore >= 250) return "Local Guide";
+    if (finalScore >= 150) return "Adventurer";
+    return "Explorer";
+}
+
+
+function shareDisplayDate() {
+    return new Intl.DateTimeFormat(
+        "en-GB",
+        {
+            timeZone: "Europe/London",
+            day: "numeric",
+            month: "short"
+        }
+    ).format(new Date());
 }
 
 
@@ -1204,6 +1325,8 @@ function startRound() {
         `${categoryIcon(current.category)} ${current.category}`;
 
     roundElement.textContent = round;
+    roundStageElement.textContent =
+        roundStage(round).name;
     scoreElement.textContent = score;
 
     updateProgress();
@@ -1368,6 +1491,10 @@ map.on(
 
         resultElement.innerHTML = `
             <div class="result-card">
+
+                <div class="round-result-stage">
+                    ${roundStage(round).name}
+                </div>
 
                 <div class="result-category">
                     ${categoryIcon(current.category)}
@@ -1535,6 +1662,9 @@ function finalResultHtml({
     scoresList = [],
     saved = false
 }) {
+    const celebration =
+        finalCelebration(finalScore);
+
     const savedNote =
         saved
             ? `
@@ -1548,15 +1678,23 @@ function finalResultHtml({
     return `
         <div class="result-card">
 
-            <div class="result-category">
+            <div class="final-kicker">
                 ${
                     gameMode === "daily"
-                        ? "Today's final score"
-                        : "Practice score"
+                        ? "Today's Cornwall journey"
+                        : "Practice journey complete"
                 }
             </div>
 
+            <div class="final-celebration">
+                ${celebration.emoji}
+            </div>
+
             <h2>${resultTitle}</h2>
+
+            <div class="score-ribbon">
+                ${celebration.ribbon}
+            </div>
 
             <div class="final-score">
                 ${finalScore}<span>/500</span>
@@ -1564,6 +1702,10 @@ function finalResultHtml({
 
             <div class="round-summary">
                 ${squares}
+            </div>
+
+            <div class="final-message">
+                ${celebration.message}
             </div>
 
             ${journeyHtml(
@@ -1590,7 +1732,7 @@ function finalResultHtml({
 
                             <div class="stat-box">
                                 <span class="stat-label">
-                                    Perfect guesses
+                                    Bullseyes
                                 </span>
                                 <span class="stat-value">
                                     ${perfectGuesses()}
@@ -1608,7 +1750,7 @@ function finalResultHtml({
 
                             <div class="stat-box">
                                 <span class="stat-label">
-                                    Lowest round
+                                    Toughest round
                                 </span>
                                 <span class="stat-value">
                                     ${worstRound()}/100
@@ -1618,6 +1760,10 @@ function finalResultHtml({
                         </div>
                     `
             }
+
+            <div class="share-preview">
+                Share your five coloured squares and challenge your friends.
+            </div>
 
         </div>
     `;
@@ -1631,6 +1777,9 @@ function showFinalResult() {
 
     targetElement.textContent =
         "Challenge complete";
+
+    roundStageElement.textContent =
+        "Journey complete";
 
     categoryElement.textContent =
         gameMode === "daily"
@@ -1706,6 +1855,8 @@ function viewSavedDailyResult() {
         "📅 Today's Challenge";
 
     roundElement.textContent = totalRounds;
+    roundStageElement.textContent =
+        "Challenge complete";
     scoreElement.textContent = saved.score;
     progressFill.style.width = "100%";
 
@@ -1764,29 +1915,26 @@ function shareText() {
             ? getSavedDailyResult()
             : null;
 
-    const resultSquares =
-        savedDaily?.squares ||
-        roundScores.map(scoreSquare).join("");
+    const scores =
+        savedDaily?.roundScores ||
+        roundScores;
 
     const currentScore =
         savedDaily?.score ?? score;
 
-    const modeText =
+    const header =
         gameMode === "daily"
-            ? `Daily Challenge · ${displayDate()}`
-            : "Practice Mode";
+            ? `🌊 CornwallTap • ${shareDisplayDate()}`
+            : "🌊 CornwallTap • Practice";
 
     return [
-        "🌊 CornwallTap",
-        modeText,
+        header,
         "",
-        `${currentScore}/500`,
-        titleForScore(currentScore),
+        shareRoundLine(scores),
         "",
-        resultSquares,
+        `${currentScore}/500 • ${compactShareTitle(currentScore)}`,
         "",
-        "Five places. How well do you know Cornwall?",
-        canonicalShareUrl()
+        `🌊 ${canonicalShareUrl()}`
     ].join("\n");
 }
 
