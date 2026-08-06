@@ -613,6 +613,32 @@ button:disabled {
     font-size: 12px;
 }
 
+
+.knowledge-message {
+    margin: 7px auto 0;
+    max-width: 460px;
+    color: #425f66;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.scoring-profile {
+    display: inline-block;
+    margin-top: 9px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #eef7f8;
+    color: var(--deep-sea);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.diagnostic-note {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
 @media (max-width: 650px) {
     header h1 {
         font-size: 25px;

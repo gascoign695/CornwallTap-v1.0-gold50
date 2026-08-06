@@ -1,5 +1,5 @@
 /*
-CornwallTap v2.0 - Milestone 2
+CornwallTap v2.2 Gold 70 - Production
 
 Modes:
 - Daily Challenge: same five locations for everyone, one scored attempt per day.
@@ -10,15 +10,124 @@ development and testing remain easy.
 */
 
 const developerMode = false;
+
 const totalRounds = 5;
 
 const difficultyBands = [
-    { min: 1, max: 2, zeroDistanceKm: 10 },
-    { min: 3, max: 4, zeroDistanceKm: 14 },
-    { min: 5, max: 6, zeroDistanceKm: 18 },
-    { min: 7, max: 8, zeroDistanceKm: 24 },
-    { min: 9, max: 10, zeroDistanceKm: 30 }
+    { min: 1, max: 2 },
+    { min: 3, max: 4 },
+    { min: 5, max: 6 },
+    { min: 7, max: 8 },
+    { min: 9, max: 10 }
 ];
+
+
+/*
+Each profile describes what a distance means in gameplay.
+Landmarks and natural features are deliberately generous:
+recognising the correct area should feel rewarding.
+*/
+const scoringProfiles = {
+    settlement_easy: {
+        label: "Settlement scoring",
+        points: [
+            { km: 0.8, score: 97 },
+            { km: 1.8, score: 93 },
+            { km: 3.5, score: 82 },
+            { km: 6, score: 65 },
+            { km: 10, score: 40 },
+            { km: 16, score: 15 },
+            { km: 20, score: 0 }
+        ]
+    },
+
+    settlement_standard: {
+        label: "Settlement scoring",
+        points: [
+            { km: 1, score: 97 },
+            { km: 2, score: 93 },
+            { km: 4, score: 82 },
+            { km: 7, score: 65 },
+            { km: 12, score: 40 },
+            { km: 18, score: 15 },
+            { km: 22, score: 0 }
+        ]
+    },
+
+    landmark_easy: {
+        label: "Landmark scoring",
+        points: [
+            { km: 1.2, score: 97 },
+            { km: 2.5, score: 92 },
+            { km: 5, score: 82 },
+            { km: 9, score: 68 },
+            { km: 14, score: 48 },
+            { km: 22, score: 25 },
+            { km: 35, score: 10 },
+            { km: 50, score: 0 }
+        ]
+    },
+
+    landmark_standard: {
+        label: "Landmark scoring",
+        points: [
+            { km: 1.5, score: 97 },
+            { km: 3, score: 92 },
+            { km: 6, score: 82 },
+            { km: 10, score: 70 },
+            { km: 16, score: 52 },
+            { km: 25, score: 35 },
+            { km: 35, score: 25 },
+            { km: 50, score: 15 },
+            { km: 65, score: 0 }
+        ]
+    },
+
+    landmark_remote: {
+        label: "Remote landmark scoring",
+        points: [
+            { km: 2, score: 97 },
+            { km: 4, score: 92 },
+            { km: 8, score: 82 },
+            { km: 14, score: 68 },
+            { km: 22, score: 50 },
+            { km: 35, score: 32 },
+            { km: 50, score: 20 },
+            { km: 65, score: 10 },
+            { km: 80, score: 0 }
+        ]
+    },
+
+    natural_standard: {
+        label: "Natural feature scoring",
+        points: [
+            { km: 2, score: 97 },
+            { km: 4, score: 92 },
+            { km: 8, score: 82 },
+            { km: 14, score: 68 },
+            { km: 22, score: 50 },
+            { km: 32, score: 35 },
+            { km: 45, score: 22 },
+            { km: 60, score: 10 },
+            { km: 75, score: 0 }
+        ]
+    },
+
+    natural_remote: {
+        label: "Remote natural feature scoring",
+        points: [
+            { km: 2.5, score: 97 },
+            { km: 5, score: 92 },
+            { km: 10, score: 82 },
+            { km: 18, score: 68 },
+            { km: 28, score: 50 },
+            { km: 42, score: 34 },
+            { km: 58, score: 20 },
+            { km: 75, score: 10 },
+            { km: 90, score: 0 }
+        ]
+    }
+};
 
 const localDevelopmentHosts = [
     "localhost",
@@ -130,10 +239,39 @@ const toastElement =
     document.getElementById("toast");
 
 
+/*
+CornwallTap map area.
+
+The bounds include mainland Cornwall and the Isles of Scilly,
+with a small amount of sea and land around them so the map
+does not feel cramped.
+
+Lanivet is used as the starting centre.
+*/
+const LANIVET_CENTER =
+    [50.44437, -4.76287];
+
+const START_ZOOM = 9;
+
+const CORNWALL_AND_SCILLY_BOUNDS =
+    L.latLngBounds(
+        [49.72, -6.75],
+        [51.02, -3.85]
+    );
+
+
 const map = L.map("map", {
     minZoom: 8,
-    maxZoom: 18
-}).setView([50.35, -5.1], 9);
+    maxZoom: 18,
+
+    maxBounds:
+        CORNWALL_AND_SCILLY_BOUNDS,
+
+    maxBoundsViscosity: 1.0
+}).setView(
+    LANIVET_CENTER,
+    START_ZOOM
+);
 
 
 L.tileLayer(
@@ -196,37 +334,133 @@ function distanceInKm(lat1, lon1, lat2, lon2) {
 }
 
 
-function scoringBandForRound(roundNumber) {
+function difficultyBandForRound(roundNumber) {
     return difficultyBands[roundNumber - 1];
+}
+
+
+function scoringProfileName(location) {
+    const profileName = location.scoreProfile;
+
+    if (!scoringProfiles[profileName]) {
+        console.warn(
+            `Unknown score profile '${profileName}' for ${location.name}. ` +
+            "Using landmark_standard."
+        );
+        return "landmark_standard";
+    }
+
+    return profileName;
+}
+
+
+function difficultyDistanceMultiplier() {
+    return 1;
+}
+
+
+function adjustedProfilePoints(
+    profileName,
+    difficulty,
+    tolerance
+) {
+    const profile =
+        scoringProfiles[profileName];
+
+    const multiplier =
+        difficultyDistanceMultiplier(difficulty);
+
+    return [
+        {
+            km: tolerance,
+            score: 100
+        },
+        ...profile.points.map(
+            point => ({
+                km: Math.max(
+                    point.km * multiplier,
+                    tolerance + 0.01
+                ),
+                score: point.score
+            })
+        )
+    ];
+}
+
+
+function interpolateScore(km, lowerPoint, upperPoint) {
+    const distanceRange = upperPoint.km - lowerPoint.km;
+
+    if (distanceRange <= 0) {
+        return upperPoint.score;
+    }
+
+    const progress = (km - lowerPoint.km) / distanceRange;
+
+    return Math.round(
+        lowerPoint.score +
+        (upperPoint.score - lowerPoint.score) * progress
+    );
 }
 
 
 function calculateScore(
     km,
-    tolerance,
-    zeroDistanceKm
+    location
 ) {
-    if (km <= tolerance) {
+    const profileName =
+        scoringProfileName(location);
+
+    const points =
+        adjustedProfilePoints(
+            profileName,
+            location.difficulty,
+            location.tolerance
+        );
+
+    if (km <= location.tolerance) {
         return 100;
     }
 
-    if (km >= zeroDistanceKm) {
-        return 0;
+    for (
+        let index = 1;
+        index < points.length;
+        index += 1
+    ) {
+        if (km <= points[index].km) {
+            return Math.max(
+                0,
+                Math.min(
+                    99,
+                    interpolateScore(
+                        km,
+                        points[index - 1],
+                        points[index]
+                    )
+                )
+            );
+        }
     }
 
-    const usableDistance =
-        zeroDistanceKm - tolerance;
+    return 0;
+}
 
-    const progress =
-        (km - tolerance) / usableDistance;
 
-    const curvedScore =
-        100 * Math.pow(1 - progress, 1.3);
+function scoringProfileLabel(location) {
+    const profileName = scoringProfileName(location);
+    return scoringProfiles[profileName].label;
+}
 
-    return Math.max(
-        0,
-        Math.min(100, Math.round(curvedScore))
+
+function zeroScoreDistance(location) {
+    const profileName = scoringProfileName(location);
+    const points = adjustedProfilePoints(
+        profileName,
+        location.difficulty,
+        location.tolerance
     );
+
+    return points[points.length - 1].km;
 }
 
 
@@ -257,23 +491,69 @@ function categoryIcon(category) {
 }
 
 
-function resultMessage(points) {
-    if (points === 100) return "Perfect!";
-    if (points >= 85) return "Excellent!";
-    if (points >= 65) return "Very close";
-    if (points >= 40) return "Good knowledge";
-    if (points >= 15) return "Right part of Cornwall";
-    return "A long way off";
+function resultFeedback(points) {
+    if (points === 100) {
+        return {
+            title: "🎯 Perfect!",
+            detail: "You knew exactly where this was."
+        };
+    }
+
+    if (points >= 90) {
+        return {
+            title: "🌟 Excellent!",
+            detail: "You clearly recognised the location."
+        };
+    }
+
+    if (points >= 75) {
+        return {
+            title: "🟩 Great knowledge",
+            detail: "You found the right area."
+        };
+    }
+
+    if (points >= 60) {
+        return {
+            title: "🟨 Good local knowledge",
+            detail: "You recognised this part of Cornwall."
+        };
+    }
+
+    if (points >= 40) {
+        return {
+            title: "🟨 Good guess",
+            detail: "You had the right district."
+        };
+    }
+
+    if (points >= 20) {
+        return {
+            title: "🟧 Roughly right",
+            detail: "You were on the right side of Cornwall."
+        };
+    }
+
+    if (points > 0) {
+        return {
+            title: "🟥 Not this time",
+            detail: "Tomorrow's challenge could suit you better."
+        };
+    }
+
+    return {
+        title: "🧭 One to remember",
+        detail: "Now you know where it is for next time."
+    };
 }
 
 
 function titleForScore(finalScore) {
-    if (finalScore >= 475) return "Kernow Master";
-    if (finalScore >= 425) return "Cornwall Expert";
-    if (finalScore >= 350) return "Cornish Explorer";
-    if (finalScore >= 250) return "Local";
-    if (finalScore >= 150) return "Holidaymaker";
-    return "Visitor";
+    if (finalScore >= 450) return "Kernow Legend";
+    if (finalScore >= 350) return "Cornwall Expert";
+    if (finalScore >= 250) return "Local Guide";
+    if (finalScore >= 150) return "Adventurer";
+    return "Explorer";
 }
 
 
@@ -333,7 +613,7 @@ function displayDate() {
 
 
 const statisticsStorageKey =
-    "cornwallTapStatistics-v2-daily-only";
+    "cornwallTapStatistics-v3-profile-pipeline";
 
 
 function defaultStatistics() {
@@ -348,6 +628,10 @@ function defaultStatistics() {
         totalGuesses: 0,
         currentStreak: 0,
         longestStreak: 0,
+        dailyRounds75Plus: 0,
+        dailyZeroRounds: 0,
+        dailyTotalRoundScore: 0,
+        dailyRoundsRecorded: 0,
         lastDailyDate: null
     };
 }
@@ -489,6 +773,25 @@ function recordCompletedGame() {
     statistics.totalGuesses +=
         roundDistances.length;
 
+    statistics.dailyRounds75Plus +=
+        roundScores.filter(
+            points => points >= 75
+        ).length;
+
+    statistics.dailyZeroRounds +=
+        roundScores.filter(
+            points => points === 0
+        ).length;
+
+    statistics.dailyTotalRoundScore +=
+        roundScores.reduce(
+            (total, points) => total + points,
+            0
+        );
+
+    statistics.dailyRoundsRecorded +=
+        roundScores.length;
+
     updateDailyStreak(statistics);
     saveStatistics(statistics);
 }
@@ -601,6 +904,16 @@ function renderStatistics() {
             "🌟",
             statistics.longestStreak,
             "Longest daily streak"
+        ),
+        statisticsCard(
+            "💚",
+            statistics.dailyRounds75Plus,
+            "Daily rounds scoring 75+"
+        ),
+        statisticsCard(
+            "🧭",
+            statistics.dailyZeroRounds,
+            "Zero-score Daily rounds"
         )
     ].join("");
 }
@@ -727,7 +1040,7 @@ function seededRandom(seed) {
 
 function selectDailyLocation() {
     const band =
-        scoringBandForRound(round);
+        difficultyBandForRound(round);
 
     const possible =
         locations.filter(
@@ -759,7 +1072,7 @@ function selectDailyLocation() {
 
 function selectPracticeLocation() {
     const band =
-        scoringBandForRound(round);
+        difficultyBandForRound(round);
 
     const possible =
         locations.filter(
@@ -784,6 +1097,7 @@ function selectPracticeLocation() {
 
     practiceUsedIds.push(current.id);
 }
+
 
 
 function selectLocation() {
@@ -895,8 +1209,8 @@ function startRound() {
     updateProgress();
 
     map.setView(
-        [50.35, -5.1],
-        9
+        LANIVET_CENTER,
+        START_ZOOM
     );
 }
 
@@ -1032,15 +1346,14 @@ map.on(
                 current.lon
             );
 
-        const scoringBand =
-            scoringBandForRound(round);
-
         const points =
             calculateScore(
                 km,
-                current.tolerance,
-                scoringBand.zeroDistanceKm
+                current
             );
+
+        const feedback =
+            resultFeedback(points);
 
         score += points;
 
@@ -1064,7 +1377,11 @@ map.on(
                 <h2>${current.name}</h2>
 
                 <div class="result-message">
-                    ${resultMessage(points)}
+                    ${feedback.title}
+                </div>
+
+                <div class="knowledge-message">
+                    ${feedback.detail}
                 </div>
 
                 <div class="round-score">
@@ -1075,10 +1392,22 @@ map.on(
                     You were ${displayDistance(km)} away
                 </div>
 
-                <div class="scoring-context">
-                    This round scores down to zero at
-                    ${scoringBand.zeroDistanceKm} km.
+                <div class="scoring-profile">
+                    ${scoringProfileLabel(current)}
                 </div>
+
+                ${
+                    developerMode
+                        ? `
+                            <div class="diagnostic-note">
+                                Zero-score distance:
+                                ${zeroScoreDistance(
+                                    current
+                                ).toFixed(1)} km
+                            </div>
+                        `
+                        : ""
+                }
 
                 <div class="location-fact">
                     <strong>Did you know?</strong><br>
@@ -1342,8 +1671,8 @@ function showFinalResult() {
     showResultModal();
 
     map.setView(
-        [50.35, -5.1],
-        9
+        LANIVET_CENTER,
+        START_ZOOM
     );
 
     updateStartScreen();

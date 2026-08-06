@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>CornwallTap Location Builder</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --deep: #003b4d;
+            --ocean: #006994;
+            --pale: #eaf6f7;
+            --soft: #dceff1;
+            --ink: #183840;
+            --muted: #667;
+            --success: #177245;
+            --warning: #8a5a00;
+            --error: #9b2c2c;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--ink);
+            background: var(--pale);
+        }
+
+        header {
+            padding: 18px 16px;
+            background: var(--deep);
+            color: white;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            opacity: 0.9;
+        }
+
+        main {
+            width: min(980px, 100%);
+            margin: 0 auto;
+            padding: 20px 14px 40px;
+        }
+
+        .card {
+            margin-bottom: 16px;
+            padding: 18px;
+            border-radius: 14px;
+            background: white;
+            box-shadow: 0 4px 18px rgba(0, 59, 77, 0.12);
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            color: var(--deep);
+        }
+
+        .steps {
+            margin: 0;
+            padding-left: 22px;
+            line-height: 1.6;
+        }
+
+        .file-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="file"] {
+            flex: 1;
+            min-width: 240px;
+            padding: 10px;
+            border: 2px dashed #a7c7cd;
+            border-radius: 10px;
+            background: #f8fcfc;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 9px;
+            background: var(--ocean);
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: #5f7d84;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 9px;
+            background: var(--soft);
+            white-space: pre-wrap;
+        }
+
+        .status.success {
+            color: var(--success);
+            background: #e6f5ed;
+        }
+
+        .status.warning {
+            color: var(--warning);
+            background: #fff5d6;
+        }
+
+        .status.error {
+            color: var(--error);
+            background: #fdeaea;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .summary-box {
+            padding: 12px;
+            border-radius: 10px;
+            background: #eef7f8;
+            text-align: center;
+        }
+
+        .summary-value {
+            display: block;
+            color: var(--deep);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .summary-label {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 1px solid #b7cfd4;
+            border-radius: 10px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .small-note {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        code {
+            padding: 2px 5px;
+            border-radius: 5px;
+            background: #eef4f5;
+        }
+
+        @media (max-width: 700px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌊 CornwallTap Location Builder</h1>
+    <p>Convert locations.csv into js/locations.js</p>
+</header>
+
+<main>
+
+    <section class="card">
+        <h2>How to use it</h2>
+
+        <ol class="steps">
+            <li>Edit <code>data/locations.csv</code> in Excel.</li>
+            <li>Save it as <strong>CSV UTF-8 (Comma delimited)</strong>.</li>
+            <li>Open this HTML file in your browser.</li>
+            <li>Select the CSV file below.</li>
+            <li>Click <strong>Generate locations.js</strong>.</li>
+            <li>Replace the file in your project's <code>js</code> folder.</li>
+        </ol>
+    </section>
+
+
+    <section class="card">
+        <h2>1. Select the CSV</h2>
+
+        <div class="file-row">
+            <input
+                id="csvFile"
+                type="file"
+                accept=".csv,text/csv"
+            >
+
+            <button id="validateButton" disabled>
+                Validate CSV
+            </button>
+        </div>
+
+
+        <div style="margin-top:14px; text-align:left;">
+            <strong>Export mode</strong><br>
+            <label><input type="radio" name="exportMode" value="live" checked> Live rows only</label><br>
+            <label><input type="radio" name="exportMode" value="draft"> Draft rows only (batch testing)</label><br>
+            <label><input type="radio" name="exportMode" value="all"> Live + Draft rows</label>
+        </div>
+
+        <div
+            id="status"
+            class="status"
+        >
+            No CSV selected yet.
+        </div>
+
+        <div
+            id="summary"
+            class="summary-grid"
+            hidden
+        >
+            <div class="summary-box">
+                <span id="totalCount" class="summary-value">0</span>
+                <span class="summary-label">Total rows</span>
+            </div>
+
+            <div class="summary-box">
+                <span id="liveCount" class="summary-value">0</span>
+                <span class="summary-label">Live rows</span>
+            </div>
+
+            <div class="summary-box">
+                <span id="verifiedCount" class="summary-value">0</span>
+                <span class="summary-label">Verified rows</span>
+            </div>
+
+            <div class="summary-box">
+                <span id="draftCount" class="summary-value">0</span>
+                <span class="summary-label">Draft rows</span>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="card">
+        <h2>2. Generate the game file</h2>
+
+        <p class="small-note">
+            Only rows where <strong>Status = Live</strong> are included.
+            If validation fails, no game file is generated.
+        </p>
+
+        <div class="actions">
+            <button id="generateButton" disabled>
+                Generate locations.js
+            </button>
+
+            <button
+                id="copyButton"
+                class="secondary"
+                disabled
+            >
+                Copy generated code
+            </button>
+        </div>
+    </section>
+
+
+    <section class="card">
+        <h2>Generated preview</h2>
+
+        <textarea
+            id="output"
+            readonly
+            placeholder="Generated JavaScript will appear here."
+        ></textarea>
+    </section>
+
+</main>
+
+
+<script>
+"use strict";
+
+const REQUIRED_HEADERS = [
+    "ID",
+    "Name",
+    "Category",
+    "Difficulty",
+    "Score Profile",
+    "Latitude",
+    "Longitude",
+    "Tolerance (km)",
+    "Fact",
+    "Status",
+    "Region",
+    "Parish",
+    "Alternate Names",
+    "Tags",
+    "Last Reviewed",
+    "Notes"
+];
+
+const VALID_STATUSES = new Set([
+    "Draft",
+    "Verified",
+    "Live"
+]);
+
+const VALID_SCORE_PROFILES = new Set([
+    "settlement_easy",
+    "settlement_standard",
+    "landmark_easy",
+    "landmark_standard",
+    "landmark_remote",
+    "natural_standard",
+    "natural_remote"
+]);
+
+const csvFileInput =
+    document.getElementById("csvFile");
+
+const validateButton =
+    document.getElementById("validateButton");
+
+const generateButton =
+    document.getElementById("generateButton");
+
+const copyButton =
+    document.getElementById("copyButton");
+
+const statusElement =
+    document.getElementById("status");
+
+const summaryElement =
+    document.getElementById("summary");
+
+const totalCountElement =
+    document.getElementById("totalCount");
+
+const liveCountElement =
+    document.getElementById("liveCount");
+
+const verifiedCountElement =
+    document.getElementById("verifiedCount");
+
+const draftCountElement =
+    document.getElementById("draftCount");
+
+const outputElement =
+    document.getElementById("output");
+
+let parsedRows = [];
+let exportRows = [];
+let generatedCode = "";
+
+
+function setStatus(message, type = "") {
+    statusElement.textContent = message;
+    statusElement.className =
+        `status ${type}`.trim();
+}
+
+
+function parseCsv(text) {
+    const rows = [];
+
+    let currentRow = [];
+    let currentValue = "";
+    let insideQuotes = false;
+
+    for (
+        let index = 0;
+        index < text.length;
+        index += 1
+    ) {
+        const character = text[index];
+        const nextCharacter =
+            text[index + 1];
+
+        if (insideQuotes) {
+            if (
+                character === '"' &&
+                nextCharacter === '"'
+            ) {
+                currentValue += '"';
+                index += 1;
+                continue;
+            }
+
+            if (character === '"') {
+                insideQuotes = false;
+                continue;
+            }
+
+            currentValue += character;
+            continue;
+        }
+
+        if (character === '"') {
+            insideQuotes = true;
+            continue;
+        }
+
+        if (character === ",") {
+            currentRow.push(currentValue);
+            currentValue = "";
+            continue;
+        }
+
+        if (
+            character === "\n" ||
+            character === "\r"
+        ) {
+            if (
+                character === "\r" &&
+                nextCharacter === "\n"
+            ) {
+                index += 1;
+            }
+
+            currentRow.push(currentValue);
+            currentValue = "";
+
+            const hasContent =
+                currentRow.some(
+                    value =>
+                        value.trim() !== ""
+                );
+
+            if (hasContent) {
+                rows.push(currentRow);
+            }
+
+            currentRow = [];
+            continue;
+        }
+
+        currentValue += character;
+    }
+
+    if (
+        currentValue.length > 0 ||
+        currentRow.length > 0
+    ) {
+        currentRow.push(currentValue);
+
+        const hasContent =
+            currentRow.some(
+                value =>
+                    value.trim() !== ""
+            );
+
+        if (hasContent) {
+            rows.push(currentRow);
+        }
+    }
+
+    return rows;
+}
+
+
+function normaliseHeader(header) {
+    return String(header || "")
+        .replace(/^\uFEFF/, "")
+        .trim();
+}
+
+
+function rowsToObjects(csvRows) {
+    if (csvRows.length === 0) {
+        throw new Error(
+            "The CSV is empty."
+        );
+    }
+
+    const headers =
+        csvRows[0].map(normaliseHeader);
+
+    const missingHeaders =
+        REQUIRED_HEADERS.filter(
+            header =>
+                !headers.includes(header)
+        );
+
+    if (missingHeaders.length > 0) {
+        throw new Error(
+            "Missing required columns: " +
+            missingHeaders.join(", ")
+        );
+    }
+
+    return csvRows
+        .slice(1)
+        .filter(
+            row =>
+                row.some(
+                    value =>
+                        String(value).trim() !== ""
+                )
+        )
+        .map(
+            (row, index) => {
+                if (row.length > headers.length) {
+                    throw new Error(
+                        `CSV row ${index + 2} has too many columns.`
+                    );
+                }
+
+                const object = {};
+
+                headers.forEach(
+                    (header, columnIndex) => {
+                        object[header] =
+                            String(
+                                row[columnIndex] ?? ""
+                            ).trim();
+                    }
+                );
+
+                object.__rowNumber =
+                    index + 2;
+
+                return object;
+            }
+        );
+}
+
+
+function validateRows(rows) {
+    const errors = [];
+    const seenIds = new Set();
+
+    rows.forEach(row => {
+        const rowNumber =
+            row.__rowNumber;
+
+        const id =
+            Number(row.ID);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            errors.push(
+                `Row ${rowNumber}: ID must be a positive whole number.`
+            );
+        } else if (seenIds.has(id)) {
+            errors.push(
+                `Row ${rowNumber}: duplicate ID ${id}.`
+            );
+        } else {
+            seenIds.add(id);
+        }
+
+        if (!row.Name) {
+            errors.push(
+                `Row ${rowNumber}: Name is required.`
+            );
+        }
+
+        if (!row.Category) {
+            errors.push(
+                `Row ${rowNumber}: Category is required.`
+            );
+        }
+
+        const difficulty =
+            Number(row.Difficulty);
+
+        if (
+            !Number.isInteger(difficulty) ||
+            difficulty < 1 ||
+            difficulty > 10
+        ) {
+            errors.push(
+                `Row ${rowNumber}: Difficulty must be from 1 to 10.`
+            );
+        }
+
+        if (
+            !VALID_SCORE_PROFILES.has(
+                row["Score Profile"]
+            )
+        ) {
+            errors.push(
+                `Row ${rowNumber}: invalid Score Profile "${row["Score Profile"]}".`
+            );
+        }
+
+        const latitude =
+            Number(row.Latitude);
+
+        const longitude =
+            Number(row.Longitude);
+
+        const tolerance =
+            Number(row["Tolerance (km)"]);
+
+        if (
+            !Number.isFinite(latitude) ||
+            latitude < 49 ||
+            latitude > 51
+        ) {
+            errors.push(
+                `Row ${rowNumber}: Latitude looks invalid.`
+            );
+        }
+
+        if (
+            !Number.isFinite(longitude) ||
+            longitude < -6.5 ||
+            longitude > -3.5
+        ) {
+            errors.push(
+                `Row ${rowNumber}: Longitude looks invalid.`
+            );
+        }
+
+        if (
+            !Number.isFinite(tolerance) ||
+            tolerance <= 0
+        ) {
+            errors.push(
+                `Row ${rowNumber}: Tolerance must be greater than zero.`
+            );
+        }
+
+        if (!row.Fact) {
+            errors.push(
+                `Row ${rowNumber}: Fact is required.`
+            );
+        }
+
+        if (!VALID_STATUSES.has(row.Status)) {
+            errors.push(
+                `Row ${rowNumber}: Status must be Draft, Verified or Live.`
+            );
+        }
+    });
+
+    return errors;
+}
+
+
+function jsString(value) {
+    return String(value ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/\r?\n/g, "\\n");
+}
+
+
+function renderLocation(row) {
+    return [
+        "    {",
+        `        id: ${Number(row.ID)},`,
+        `        name: "${jsString(row.Name)}",`,
+        `        category: "${jsString(row.Category)}",`,
+        `        difficulty: ${Number(row.Difficulty)},`,
+        `        scoreProfile: "${jsString(row["Score Profile"])}",`,
+        `        lat: ${Number(row.Latitude).toFixed(8)},`,
+        `        lon: ${Number(row.Longitude).toFixed(8)},`,
+        `        tolerance: ${Number(row["Tolerance (km)"]).toFixed(3)},`,
+        `        fact: "${jsString(row.Fact)}",`,
+        `        region: "${jsString(row.Region)}",`,
+        `        parish: "${jsString(row.Parish)}",`,
+        "        verified: true",
+        "    }"
+    ].join("\n");
+}
+
+
+function buildLocationsJs(rows) {
+    const sortedRows =
+        [...rows].sort(
+            (first, second) =>
+                Number(first.ID) -
+                Number(second.ID)
+        );
+
+    const objects =
+        sortedRows.map(renderLocation);
+
+    return [
+        "// GENERATED FILE - DO NOT EDIT MANUALLY",
+        "// Source: data/locations.csv",
+        "",
+        "const locations = [",
+        objects.join(",\n\n"),
+        "];",
+        ""
+    ].join("\n");
+}
+
+
+function updateSummary(rows) {
+    const live =
+        rows.filter(
+            row => row.Status === "Live"
+        ).length;
+
+    const verified =
+        rows.filter(
+            row => row.Status === "Verified"
+        ).length;
+
+    const draft =
+        rows.filter(
+            row => row.Status === "Draft"
+        ).length;
+
+    totalCountElement.textContent =
+        rows.length;
+
+    liveCountElement.textContent =
+        live;
+
+    verifiedCountElement.textContent =
+        verified;
+
+    draftCountElement.textContent =
+        draft;
+
+    summaryElement.hidden = false;
+}
+
+
+function resetGeneratedOutput() {
+    generatedCode = "";
+    outputElement.value = "";
+    generateButton.disabled = true;
+    copyButton.disabled = true;
+}
+
+
+async function readSelectedFile() {
+    const file =
+        csvFileInput.files[0];
+
+    if (!file) {
+        throw new Error(
+            "Choose a CSV file first."
+        );
+    }
+
+    return file.text();
+}
+
+
+function selectedExportMode() {
+    return document.querySelector(
+        'input[name="exportMode"]:checked'
+    ).value;
+}
+
+
+function rowsForSelectedMode(rows) {
+    const mode = selectedExportMode();
+
+    if (mode === "draft") {
+        return rows.filter(
+            row => row.Status === "Draft"
+        );
+    }
+
+    if (mode === "all") {
+        return rows.filter(
+            row =>
+                row.Status === "Live" ||
+                row.Status === "Draft"
+        );
+    }
+
+    return rows.filter(
+        row => row.Status === "Live"
+    );
+}
+
+
+async function validateSelectedCsv() {
+    resetGeneratedOutput();
+
+    try {
+        const text =
+            await readSelectedFile();
+
+        const csvRows =
+            parseCsv(text);
+
+        parsedRows =
+            rowsToObjects(csvRows);
+
+        const errors =
+            validateRows(parsedRows);
+
+        updateSummary(parsedRows);
+
+        if (errors.length > 0) {
+            const displayedErrors =
+                errors.slice(0, 20);
+
+            const remaining =
+                errors.length -
+                displayedErrors.length;
+
+            setStatus(
+                [
+                    `Validation failed with ${errors.length} error(s):`,
+                    "",
+                    ...displayedErrors.map(
+                        error => `• ${error}`
+                    ),
+                    remaining > 0
+                        ? `\n…and ${remaining} more error(s).`
+                        : ""
+                ].join("\n"),
+                "error"
+            );
+
+            exportRows = [];
+            return;
+        }
+
+        exportRows =
+            rowsForSelectedMode(parsedRows);
+
+        if (exportRows.length === 0) {
+            setStatus(
+                "The CSV is valid, but the selected export mode contains no rows.",
+                "warning"
+            );
+
+            return;
+        }
+
+        generateButton.disabled = false;
+
+        setStatus(
+            [
+                "Validation successful.",
+                `${exportRows.length} location(s) are ready to export.`,
+                `Mode: ${selectedExportMode()}`
+            ].join("\n"),
+            "success"
+        );
+    } catch (error) {
+        parsedRows = [];
+        exportRows = [];
+        summaryElement.hidden = true;
+
+        setStatus(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+function downloadTextFile(
+    filename,
+    text
+) {
+    const blob =
+        new Blob(
+            [text],
+            {
+                type:
+                    "text/javascript;charset=utf-8"
+            }
+        );
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const link =
+        document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+
+function generateLocationsFile() {
+    if (exportRows.length === 0) {
+        setStatus(
+            "There are no validated Live rows to export.",
+            "error"
+        );
+
+        return;
+    }
+
+    generatedCode =
+        buildLocationsJs(exportRows);
+
+    outputElement.value =
+        generatedCode;
+
+    copyButton.disabled = false;
+
+    downloadTextFile(
+        "locations.js",
+        generatedCode
+    );
+
+    setStatus(
+        `Generated locations.js with ${exportRows.length} locations.`,
+        "success"
+    );
+}
+
+
+async function copyGeneratedCode() {
+    if (!generatedCode) {
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(
+            generatedCode
+        );
+
+        setStatus(
+            "Generated code copied to the clipboard.",
+            "success"
+        );
+    } catch (error) {
+        outputElement.focus();
+        outputElement.select();
+
+        setStatus(
+            "Automatic copying was blocked. The generated code has been selected so you can copy it manually.",
+            "warning"
+        );
+    }
+}
+
+
+csvFileInput.addEventListener(
+    "change",
+    function () {
+        resetGeneratedOutput();
+        summaryElement.hidden = true;
+
+        validateButton.disabled =
+            csvFileInput.files.length === 0;
+
+        setStatus(
+            csvFileInput.files.length > 0
+                ? `Selected: ${csvFileInput.files[0].name}`
+                : "No CSV selected yet."
+        );
+    }
+);
+
+
+document.querySelectorAll(
+    'input[name="exportMode"]'
+).forEach(
+    radio => radio.addEventListener(
+        "change",
+        function () {
+            resetGeneratedOutput();
+            setStatus(
+                "Export mode changed. Click Validate CSV again."
+            );
+        }
+    )
+);
+
+
+validateButton.addEventListener(
+    "click",
+    validateSelectedCsv
+);
+
+
+generateButton.addEventListener(
+    "click",
+    generateLocationsFile
+);
+
+
+copyButton.addEventListener(
+    "click",
+    copyGeneratedCode
+);
+</script>
+
+</body>
+</html>
