@@ -1050,5 +1050,455 @@ const locations = [
         region: "West Cornwall",
         parish: "",
         verified: true
+    },
+
+    {
+        id: 71,
+        name: "Camelford",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.62287400,
+        lon: -4.67890800,
+        tolerance: 0.600,
+        fact: "Camelford is a small market town on the River Camel near the northwestern edge of Bodmin Moor.",
+        region: "North Cornwall",
+        parish: "Camelford",
+        verified: true
+    },
+
+    {
+        id: 72,
+        name: "Callington",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.50304600,
+        lon: -4.31586300,
+        tolerance: 0.600,
+        fact: "Callington is a market town in the Tamar Valley beneath Kit Hill.",
+        region: "East Cornwall",
+        parish: "Callington",
+        verified: true
+    },
+
+    {
+        id: 73,
+        name: "Saltash",
+        category: "Town",
+        difficulty: 2,
+        scoreProfile: "settlement_easy",
+        lat: 50.40870000,
+        lon: -4.21120000,
+        tolerance: 0.700,
+        fact: "Saltash stands beside the River Tamar and is often described as the gateway to Cornwall.",
+        region: "East Cornwall",
+        parish: "Saltash",
+        verified: true
+    },
+
+    {
+        id: 74,
+        name: "St Austell",
+        category: "Town",
+        difficulty: 2,
+        scoreProfile: "settlement_easy",
+        lat: 50.33810000,
+        lon: -4.79420000,
+        tolerance: 0.750,
+        fact: "St Austell grew rapidly with the expansion of Cornwall's china-clay industry.",
+        region: "Mid Cornwall",
+        parish: "St Austell",
+        verified: true
+    },
+
+    {
+        id: 75,
+        name: "Camborne",
+        category: "Town",
+        difficulty: 3,
+        scoreProfile: "settlement_easy",
+        lat: 50.21388000,
+        lon: -5.29904000,
+        tolerance: 0.700,
+        fact: "Camborne became a major centre of Cornish mining and engineering during the Industrial Revolution.",
+        region: "West Cornwall",
+        parish: "Camborne",
+        verified: true
+    },
+
+    {
+        id: 76,
+        name: "Newlyn",
+        category: "Town",
+        difficulty: 3,
+        scoreProfile: "settlement_easy",
+        lat: 50.10630000,
+        lon: -5.54950000,
+        tolerance: 0.600,
+        fact: "Newlyn is a major fishing port and gave its name to the influential Newlyn School of artists.",
+        region: "West Cornwall",
+        parish: "Penzance",
+        verified: true
+    },
+
+    {
+        id: 77,
+        name: "St Just",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.12440100,
+        lon: -5.67977400,
+        tolerance: 0.600,
+        fact: "St Just is the most westerly town in mainland Britain and lies within the historic mining landscape of West Penwith.",
+        region: "West Cornwall",
+        parish: "St Just",
+        verified: true
+    },
+
+    {
+        id: 78,
+        name: "St Keverne",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.04940000,
+        lon: -5.08933000,
+        tolerance: 0.500,
+        fact: "St Keverne is a large village on the Lizard Peninsula with a spacious central square.",
+        region: "Mid Cornwall",
+        parish: "St Keverne",
+        verified: true
+    },
+
+    {
+        id: 79,
+        name: "St Neot",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.48222200,
+        lon: -4.55888900,
+        tolerance: 0.500,
+        fact: "St Neot is a moorland-edge village known for the medieval stained glass in its parish church.",
+        region: "East Cornwall",
+        parish: "St Neot",
+        verified: true
+    },
+
+    {
+        id: 80,
+        name: "Jamaica Inn",
+        category: "Landmark",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.56234000,
+        lon: -4.56673000,
+        tolerance: 0.300,
+        fact: "Jamaica Inn is an eighteenth-century coaching inn on Bodmin Moor made famous by Daphne du Maurier's novel.",
+        region: "East Cornwall",
+        parish: "Altarnun",
+        verified: true
+    },
+
+    {
+        id: 81,
+        name: "Portreath",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.26088000,
+        lon: -5.28968000,
+        tolerance: 0.550,
+        fact: "Portreath developed around a small harbour that once exported copper ore and imported coal.",
+        region: "West Cornwall",
+        parish: "Portreath",
+        verified: true
+    },
+
+    {
+        id: 82,
+        name: "St Columb Major",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.43450000,
+        lon: -4.94020000,
+        tolerance: 0.600,
+        fact: "St Columb Major is an historic market town associated with the traditional Cornish hurling game.",
+        region: "North Cornwall",
+        parish: "St Columb Major",
+        verified: true
+    },
+
+    {
+        id: 83,
+        name: "Gunnislake",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.52388000,
+        lon: -4.21619000,
+        tolerance: 0.550,
+        fact: "Gunnislake is a Tamar Valley village with a long history connected to mining and river transport.",
+        region: "East Cornwall",
+        parish: "Calstock",
+        verified: true
+    },
+
+    {
+        id: 84,
+        name: "Kilkhampton",
+        category: "Village",
+        difficulty: 8,
+        scoreProfile: "settlement_standard",
+        lat: 50.87599000,
+        lon: -4.48187000,
+        tolerance: 0.550,
+        fact: "Kilkhampton is a large village near Cornwall's northern border, a few miles inland from Bude.",
+        region: "East Cornwall",
+        parish: "Kilkhampton",
+        verified: true
+    },
+
+    {
+        id: 85,
+        name: "Polruan",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.32860000,
+        lon: -4.63458000,
+        tolerance: 0.500,
+        fact: "Polruan is a steep-sided village opposite Fowey at the mouth of the River Fowey.",
+        region: "Mid Cornwall",
+        parish: "Lanteglos-by-Fowey",
+        verified: true
+    },
+
+    {
+        id: 86,
+        name: "Crantock",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.40162000,
+        lon: -5.11012000,
+        tolerance: 0.500,
+        fact: "Crantock is a coastal village southwest of Newquay, close to a broad sandy beach and tidal estuary.",
+        region: "Mid Cornwall",
+        parish: "Crantock",
+        verified: true
+    },
+
+    {
+        id: 87,
+        name: "Constantine (village)",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.11888000,
+        lon: -5.17496000,
+        tolerance: 0.500,
+        fact: "Constantine is a large village west of Falmouth, surrounded by wooded valleys and farmland.",
+        region: "Mid Cornwall",
+        parish: "Constantine",
+        verified: true
+    },
+
+    {
+        id: 88,
+        name: "Zennor",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.19190000,
+        lon: -5.56740000,
+        tolerance: 0.500,
+        fact: "Zennor is a small West Penwith village known for the legend of the Mermaid of Zennor.",
+        region: "West Cornwall",
+        parish: "Zennor",
+        verified: true
+    },
+
+    {
+        id: 89,
+        name: "Millbrook",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.34715000,
+        lon: -4.21690000,
+        tolerance: 0.550,
+        fact: "Millbrook is a large village on the Rame Peninsula beside a tidal lake connected to the Tamar estuary.",
+        region: "East Cornwall",
+        parish: "Millbrook",
+        verified: true
+    },
+
+    {
+        id: 90,
+        name: "Roche Rock",
+        category: "Landmark",
+        difficulty: 7,
+        scoreProfile: "landmark_remote",
+        lat: 50.40200000,
+        lon: -4.82830000,
+        tolerance: 0.300,
+        fact: "Roche Rock is a dramatic granite outcrop crowned by the ruins of a medieval chapel.",
+        region: "Mid Cornwall",
+        parish: "Roche",
+        verified: true
+    },
+
+    {
+        id: 91,
+        name: "Perranuthnoe",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.11553000,
+        lon: -5.44431000,
+        tolerance: 0.500,
+        fact: "Perranuthnoe is a coastal village overlooking Mount's Bay, close to St Michael's Mount.",
+        region: "West Cornwall",
+        parish: "Perranuthnoe",
+        verified: true
+    },
+
+    {
+        id: 92,
+        name: "Gwithian",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.22088000,
+        lon: -5.38580000,
+        tolerance: 0.500,
+        fact: "Gwithian is a small coastal village overlooking St Ives Bay and the dunes of Gwithian Towans.",
+        region: "West Cornwall",
+        parish: "Gwinear-Gwithian",
+        verified: true
+    },
+
+    {
+        id: 93,
+        name: "St Germans",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.39510000,
+        lon: -4.31130000,
+        tolerance: 0.550,
+        fact: "St Germans stands above the River Tiddy and was once the seat of a medieval Cornish bishopric.",
+        region: "East Cornwall",
+        parish: "St Germans",
+        verified: true
+    },
+
+    {
+        id: 94,
+        name: "Altarnun",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.60340000,
+        lon: -4.51174000,
+        tolerance: 0.500,
+        fact: "Altarnun lies on the edge of Bodmin Moor and is known for St Nonna's Church, the Cathedral of the Moor.",
+        region: "East Cornwall",
+        parish: "Altarnun",
+        verified: true
+    },
+
+    {
+        id: 95,
+        name: "Flushing",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.16542000,
+        lon: -5.07023000,
+        tolerance: 0.500,
+        fact: "Flushing faces Falmouth across the Penryn River and developed as a riverside maritime village.",
+        region: "Mid Cornwall",
+        parish: "Mylor",
+        verified: true
+    },
+
+    {
+        id: 96,
+        name: "St Day",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.23930000,
+        lon: -5.18488000,
+        tolerance: 0.500,
+        fact: "St Day grew within the heart of Cornwall's historic copper- and tin-mining district.",
+        region: "West Cornwall",
+        parish: "St Day",
+        verified: true
+    },
+
+    {
+        id: 97,
+        name: "Hugh Town",
+        category: "Town",
+        difficulty: 8,
+        scoreProfile: "settlement_standard",
+        lat: 49.91456000,
+        lon: -6.31536000,
+        tolerance: 0.600,
+        fact: "Hugh Town is the largest settlement and administrative centre of the Isles of Scilly.",
+        region: "Isles of Scilly",
+        parish: "St Mary's",
+        verified: true
+    },
+
+    {
+        id: 98,
+        name: "Tresco",
+        category: "Island",
+        difficulty: 8,
+        scoreProfile: "natural_remote",
+        lat: 49.95506000,
+        lon: -6.33379000,
+        tolerance: 1.500,
+        fact: "Tresco is the second-largest inhabited island in the Isles of Scilly and is known for its subtropical Abbey Garden.",
+        region: "Isles of Scilly",
+        parish: "Tresco",
+        verified: true
+    },
+
+    {
+        id: 99,
+        name: "St Martin's",
+        category: "Island",
+        difficulty: 9,
+        scoreProfile: "natural_remote",
+        lat: 49.96300000,
+        lon: -6.28590000,
+        tolerance: 1.500,
+        fact: "St Martin's is one of the inhabited Isles of Scilly, known for its long beaches and distinctive red-and-white daymark.",
+        region: "Isles of Scilly",
+        parish: "St Martin's",
+        verified: true
+    },
+
+    {
+        id: 100,
+        name: "Bishop Rock Lighthouse",
+        category: "Lighthouse",
+        difficulty: 10,
+        scoreProfile: "landmark_remote",
+        lat: 49.87285000,
+        lon: -6.44557000,
+        tolerance: 0.300,
+        fact: "Bishop Rock Lighthouse stands on a tiny Atlantic rock southwest of the Isles of Scilly.",
+        region: "Isles of Scilly",
+        parish: "St Agnes",
+        verified: true
     }
 ];
