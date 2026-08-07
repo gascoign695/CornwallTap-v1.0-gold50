@@ -1890,7 +1890,7 @@ function restartPractice() {
 
 
 function canonicalShareUrl() {
-    return "https://cornwalltap.co.uk";
+    return "cornwalltap.co.uk";
 
 }
 
@@ -1909,19 +1909,19 @@ function shareText() {
         savedDaily?.score ?? score;
 
     const header =
-        gameMode === "daily"
-            ? `🌊 CornwallTap • ${shareDisplayDate()}`
-            : "🌊 CornwallTap • Practice";
+    gameMode === "daily"
+        ? `CornwallTap • ${shareDisplayDate()}`
+        : "CornwallTap • Practice";
 
-    return [
-        header,
-        "",
-        shareRoundLine(scores),
-        "",
-        `${currentScore}/500 • ${compactShareTitle(currentScore)}`,
-        "",
-        `🌊 ${canonicalShareUrl()}`
-    ].join("\n");
+return [
+    header,
+    "",
+    shareRoundLine(scores),
+    "",
+    `${currentScore}/500 • ${compactShareTitle(currentScore)}`,
+    "",
+    canonicalShareUrl()
+].join("\n");
 }
 
 
