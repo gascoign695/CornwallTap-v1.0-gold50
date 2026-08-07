@@ -1890,22 +1890,8 @@ function restartPractice() {
 
 
 function canonicalShareUrl() {
-    if (
-        window.location.hostname ===
-        "cornwalltap.pages.dev"
-    ) {
-        return "https://cornwalltap.pages.dev";
-    }
+    return "https://cornwalltap.co.uk";
 
-    if (
-        window.location.hostname.endsWith(
-            ".cornwalltap.pages.dev"
-        )
-    ) {
-        return "https://cornwalltap.pages.dev";
-    }
-
-    return window.location.origin;
 }
 
 
