@@ -489,34 +489,6 @@ function zeroScoreDistance(location) {
     return points[points.length - 1].km;
 }
 
-
-function categoryIcon(category) {
-    const icons = {
-        "Town": "🏘️",
-        "Village": "🏘️",
-        "Headland": "🌊",
-        "Tidal Island": "🏝️",
-        "Attraction": "🌿",
-        "Castle": "🏰",
-        "Harbour": "⚓",
-        "Cove": "🏖️",
-        "Beach": "🏖️",
-        "Landmark": "📍",
-        "Lighthouse": "💡",
-        "Natural Feature": "⛰️",
-        "Prehistoric Monument": "🪨",
-        "Historic Building": "🏛️",
-        "Historic House": "🏛️",
-        "Mining Heritage": "⛏️",
-        "Railway Heritage": "🚂",
-        "Bridge": "🌉",
-        "Garden": "🌿"
-    };
-
-    return icons[category] || "📍";
-}
-
-
 function resultFeedback(points) {
     if (points === 100) {
         return {
@@ -1288,8 +1260,8 @@ function startMode(selectedMode) {
 
     modeLabelElement.textContent =
         gameMode === "daily"
-            ? "📅 Today's Challenge"
-            : "🎯 Practice Mode";
+            ? "Today's Challenge"
+            : "Practice Mode";
 
     challengeDateElement.textContent =
         displayDate();
@@ -1322,7 +1294,7 @@ function startRound() {
         current.name;
 
     categoryElement.textContent =
-        `${categoryIcon(current.category)} ${current.category}`;
+    current.category;
 
     roundElement.textContent = round;
     roundStageElement.textContent =
@@ -1497,9 +1469,8 @@ map.on(
                 </div>
 
                 <div class="result-category">
-                    ${categoryIcon(current.category)}
-                    ${current.category}
-                </div>
+    ${current.category}
+</div>
 
                 <h2>${current.name}</h2>
 
@@ -1783,8 +1754,8 @@ function showFinalResult() {
 
     categoryElement.textContent =
         gameMode === "daily"
-            ? "📅 Today's Challenge"
-            : "🎯 Practice Mode";
+            ? "Today's Challenge"
+            : "Practice Mode";
 
     const resultSquares =
         roundScores
@@ -1841,7 +1812,7 @@ function viewSavedDailyResult() {
     gameFinished = true;
 
     modeLabelElement.textContent =
-        "📅 Today's Challenge";
+        "Today's Challenge";
 
     challengeDateElement.textContent =
         displayDate();
@@ -1852,7 +1823,7 @@ function viewSavedDailyResult() {
         "Challenge complete";
 
     categoryElement.textContent =
-        "📅 Today's Challenge";
+        "Today's Challenge";
 
     roundElement.textContent = totalRounds;
     roundStageElement.textContent =
