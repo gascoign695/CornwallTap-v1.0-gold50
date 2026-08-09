@@ -1122,7 +1122,7 @@ function updateStartScreen() {
             `Completed today: ${savedResult.score}/500 · ${savedResult.title}`;
     } else {
         dailyStartButton.textContent =
-            "📅 Play Today's Challenge";
+            "Play Today's Challenge";
 
         dailyStatusElement.textContent =
             dailyLockBypass

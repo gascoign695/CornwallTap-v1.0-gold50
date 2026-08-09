@@ -815,3 +815,270 @@ button:disabled {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Landing page polish */
+header h1 { display:flex; align-items:center; justify-content:center; gap:8px; }
+header h1 img { display:block; border-radius:9px; }
+
+.start-screen {
+    padding:34px 14px;
+    background:radial-gradient(circle at 50% 8%,rgba(255,255,255,.95) 0,rgba(255,255,255,0) 34%),linear-gradient(180deg,#eaf6f7 0%,#dceff1 100%);
+}
+.start-card {
+    width:min(540px,100%);
+    padding:32px 32px 26px;
+    border:1px solid rgba(0,59,77,.08);
+    border-radius:24px;
+    box-shadow:0 18px 50px rgba(0,59,77,.14);
+}
+.start-brand { display:flex; flex-direction:column; align-items:center; }
+.start-logo {
+    display:block; width:88px; height:88px; margin-bottom:14px;
+    border-radius:20px; filter:drop-shadow(0 8px 12px rgba(0,59,77,.18));
+}
+.start-brand .eyebrow { margin-bottom:6px; }
+.start-card .start-brand h2 {
+    margin:0; color:var(--deep-sea); font-size:clamp(34px,8vw,44px);
+    line-height:1; letter-spacing:-1.2px;
+}
+.start-strapline { margin:9px 0 0; color:#31565f; font-size:17px; font-weight:bold; }
+.start-date { margin-top:10px; font-size:13px; }
+.start-intro { max-width:390px; margin:20px auto 4px; color:#425f66; font-size:15px; line-height:1.5; }
+.primary-choice {
+    min-height:54px; margin-top:20px; border-radius:12px; background:var(--ocean);
+    box-shadow:0 7px 16px rgba(0,105,148,.2); font-size:18px;
+}
+.primary-choice:hover:not(:disabled) { transform:translateY(-1px); }
+.daily-status { min-height:18px; margin-top:7px; font-size:13px; }
+.secondary-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px; }
+.secondary-actions .secondary-choice,.secondary-actions .tertiary-choice {
+    min-height:46px; margin-top:0; padding:10px 14px; font-size:15px;
+}
+.secondary-choice { background:#55777f; }
+.tertiary-choice { border:1px solid #a9c9cf; }
+.feature-row { gap:8px; margin:20px 0 0; }
+.feature-row span { padding:7px 10px; border:1px solid #d7e9ec; background:#f2f9fa; font-size:11px; }
+.start-footnote {
+    max-width:410px; margin:14px auto 0; padding-top:13px; border-top:1px solid #e2ecee;
+    color:var(--muted); font-size:12px; line-height:1.45;
+}
+@media (max-width:650px) {
+    .start-screen { align-items:start; padding:18px 10px 24px; }
+    .start-card { padding:24px 16px 20px; border-radius:20px; }
+    .start-logo { width:76px; height:76px; margin-bottom:12px; border-radius:18px; }
+    .start-card .start-brand h2 { font-size:36px; }
+    .start-strapline { font-size:15px; }
+    .start-intro { margin-top:16px; font-size:14px; }
+    .primary-choice { min-height:52px; margin-top:16px; }
+    .secondary-actions { gap:8px; }
+    .feature-row { margin-top:16px; }
+    .start-footnote { margin-top:12px; }
+}
+@media (max-width:390px) {
+    .secondary-actions { grid-template-columns:1fr; }
+    .feature-row { gap:5px; }
+    .feature-row span { padding:6px 8px; font-size:10px; }
+}
+
+
+/* Landing page polish - second pass */
+:root {
+    --brand-navy: #071c35;
+    --brand-teal: #10aeb8;
+}
+
+.brand-wordmark {
+    font-weight: 800;
+    letter-spacing: -0.7px;
+}
+
+.brand-cornwall {
+    color: var(--brand-navy);
+}
+
+.brand-tap {
+    color: var(--brand-teal);
+}
+
+header .brand-cornwall {
+    color: #ffffff;
+}
+
+header .brand-tap {
+    color: #25c4c8;
+}
+
+header h1 {
+    font-size: 28px;
+}
+
+.start-screen {
+    padding: 26px 14px;
+}
+
+.start-card {
+    padding: 27px 32px 22px;
+}
+
+.start-logo {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 12px;
+    border-radius: 22px;
+}
+
+.start-brand .eyebrow {
+    margin-bottom: 7px;
+    color: #087c9d;
+    font-size: 11px;
+    letter-spacing: 1.8px;
+}
+
+.start-card .start-brand h2 {
+    font-size: clamp(36px, 8vw, 46px);
+    letter-spacing: -1.6px;
+}
+
+.start-strapline {
+    margin-top: 8px;
+    font-size: 16px;
+}
+
+.start-date {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f2f7f8;
+    color: #60747a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.start-intro {
+    margin-top: 17px;
+    font-size: 15px;
+}
+
+.primary-choice {
+    margin-top: 17px;
+    background: #087da4;
+}
+
+.secondary-choice {
+    background: var(--brand-navy);
+}
+
+.secondary-choice:hover:not(:disabled) {
+    background: #0c2b4d;
+}
+
+.tertiary-choice {
+    border-color: #9fc7cf;
+    color: var(--brand-navy);
+}
+
+.feature-row {
+    align-items: center;
+    gap: 0;
+    margin-top: 17px;
+}
+
+.feature-row span {
+    padding: 0 11px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #537078;
+    font-size: 10px;
+    letter-spacing: 0.65px;
+    text-transform: uppercase;
+}
+
+.feature-row span + span {
+    border-left: 1px solid #bfd4d8;
+}
+
+.start-footnote {
+    margin-top: 14px;
+    padding-top: 12px;
+    font-size: 11px;
+}
+
+@media (max-width: 650px) {
+    header h1 {
+        font-size: 24px;
+    }
+
+    .start-screen {
+        padding: 14px 10px 20px;
+    }
+
+    .start-card {
+        padding: 21px 16px 18px;
+    }
+
+    .start-logo {
+        width: 82px;
+        height: 82px;
+        margin-bottom: 10px;
+        border-radius: 19px;
+    }
+
+    .start-card .start-brand h2 {
+        font-size: 37px;
+    }
+
+    .feature-row span {
+        padding: 0 8px;
+        font-size: 9px;
+    }
+}
+
+
+/* CornwallTap typography */
+body {
+    font-family: "Poppins", Arial, Helvetica, sans-serif;
+}
+
+button {
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.brand-wordmark {
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+header .brand-wordmark {
+    letter-spacing: -0.6px;
+}
+
+.start-card .start-brand h2 {
+    font-weight: 700;
+    letter-spacing: -1.4px;
+}
+
+.start-strapline {
+    font-weight: 600;
+}
+
+.start-brand .eyebrow,
+.feature-row span {
+    font-weight: 600;
+}
+
+.primary-choice {
+    font-weight: 600;
+}
+
+.secondary-actions button {
+    font-weight: 600;
+}
+
+.start-footnote,
+.start-intro {
+    font-weight: 400;
+}

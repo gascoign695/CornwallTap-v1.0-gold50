@@ -43,6 +43,14 @@
         content="Five places. One Cornwall challenge."
     >
 
+    <!-- CornwallTap typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -60,9 +68,8 @@
             alt=""
             width="40"
             height="40"
-            style="vertical-align: middle; border-radius: 9px; margin-right: 8px;"
         >
-        CornwallTap
+        <span class="brand-wordmark"><span class="brand-cornwall">Cornwall</span><span class="brand-tap">Tap</span></span>
     </h1>
     <div class="tagline">Five places. One Cornwall challenge.</div>
 </header>
@@ -73,48 +80,50 @@
 
         <div class="start-card">
 
-            <div class="eyebrow">DAILY CORNWALL MAP CHALLENGE</div>
+            <div class="start-brand">
+                <img class="start-logo" src="/favicon.svg" alt="" width="88" height="88">
 
-            <div class="start-date" id="startDate"></div>
+                <div class="eyebrow">DAILY CORNWALL MAP CHALLENGE</div>
 
-            <h2>How well do you know Cornwall?</h2>
+                <h2 class="brand-wordmark"><span class="brand-cornwall">Cornwall</span><span class="brand-tap">Tap</span></h2>
 
-            <p class="start-intro">
-                Five locations. Five map taps. The challenge
-                gets harder as you travel around the county.
-            </p>
+                <p class="start-strapline">Five places. One Cornwall challenge.</p>
 
-            <div class="feature-row" aria-label="Game features">
-                <span>🛰️ Satellite map</span>
-                <span>🎯 500 points</span>
-                <span>⏱️ About 3 minutes</span>
+                <div class="start-date" id="startDate"></div>
             </div>
 
+            <p class="start-intro">
+                Five locations. Tap the map.<br>
+                See how well you know Cornwall.
+            </p>
+
             <button id="dailyStartButton" class="primary-choice">
-                📅 Play Today's Challenge
+                Play Today's Challenge
             </button>
 
             <div id="dailyStatus" class="daily-status"></div>
 
-            <button id="practiceStartButton" class="secondary-choice">
-                🎯 Practice Mode
-            </button>
+            <div class="secondary-actions">
+                <button id="practiceStartButton" class="secondary-choice">
+                    Practice Mode
+                </button>
 
-            <button id="statsButton" class="tertiary-choice">
-                📊 Your Statistics
-            </button>
-
-            <div class="mode-explainer">
-                <p class="mode-note">
-                    <strong>Daily:</strong> identical locations for every
-                    player, with one scored result per day.
-                </p>
-
-                <p class="mode-note">
-                    <strong>Practice:</strong> random locations and
-                    unlimited games.
-                </p>
+                <button id="statsButton" class="tertiary-choice">
+                    Your Statistics
+                </button>
             </div>
+
+            <div class="feature-row" aria-label="Game features">
+                <span>Satellite map</span>
+                <span>Five rounds</span>
+                <span>~3 minutes</span>
+            </div>
+
+            <p class="start-footnote">
+                Same five places for everyone. One scored attempt each day.
+            </p>
+
+        </div>
 
         </div>
 
