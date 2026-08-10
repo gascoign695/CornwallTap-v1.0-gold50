@@ -177,6 +177,7 @@ let practiceUsedIds = [];
 
 let analyticsSessionId = null;
 let analyticsGameStartedAt = null;
+let analyticsPlayerId = null;
 
 let guessMarker = null;
 let answerMarker = null;
@@ -1255,6 +1256,34 @@ function showStartScreen() {
     updateStartScreen();
 }
 
+function getAnalyticsPlayerId() {
+    const storageKey = "cornwallTapAnalyticsPlayerId";
+
+    let playerId =
+        localStorage.getItem(storageKey);
+
+    if (playerId) {
+        return playerId;
+    }
+
+    if (window.crypto?.randomUUID) {
+        playerId =
+            window.crypto.randomUUID();
+    } else {
+        playerId = [
+            Date.now().toString(36),
+            Math.random().toString(36).slice(2)
+        ].join("-");
+    }
+
+    localStorage.setItem(
+        storageKey,
+        playerId
+    );
+
+    return playerId;
+}
+
 function analyticsDeviceType() {
     return window.matchMedia("(max-width: 650px)").matches
         ? "mobile"
@@ -1294,13 +1323,14 @@ function trackEvent(eventType, details = {}) {
     }
 
     const payload = {
-        event_type: eventType,
-        game_mode: gameMode,
-        challenge_date: currentDateKey(),
-        session_id: analyticsSessionId,
-        device_type: analyticsDeviceType(),
-        ...details
-    };
+    event_type: eventType,
+    game_mode: gameMode,
+    challenge_date: currentDateKey(),
+    session_id: analyticsSessionId,
+    player_id: analyticsPlayerId,
+    device_type: analyticsDeviceType(),
+    ...details
+};
 
     fetch("/api/event", {
         method: "POST",
@@ -1322,6 +1352,9 @@ function startMode(selectedMode) {
 
     resetGameState();
 
+    analyticsPlayerId =
+    getAnalyticsPlayerId();
+    
 analyticsSessionId =
     createAnalyticsSessionId();
 
