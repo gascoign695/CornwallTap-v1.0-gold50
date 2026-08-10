@@ -50,7 +50,7 @@ export async function onRequestPost(context) {
                     round_score,
                     distance_km
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `)
             .bind(
                 event_type,
