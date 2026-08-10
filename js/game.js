@@ -175,6 +175,9 @@ let roundDistances = [];
 let roundLocations = [];
 let practiceUsedIds = [];
 
+let analyticsSessionId = null;
+let analyticsGameStartedAt = null;
+
 let guessMarker = null;
 let answerMarker = null;
 let answerLine = null;
@@ -1252,13 +1255,82 @@ function showStartScreen() {
     updateStartScreen();
 }
 
+function analyticsDeviceType() {
+    return window.matchMedia("(max-width: 650px)").matches
+        ? "mobile"
+        : "desktop";
+}
+
+
+function createAnalyticsSessionId() {
+    if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+    }
+
+    return [
+        Date.now().toString(36),
+        Math.random().toString(36).slice(2)
+    ].join("-");
+}
+
+
+function analyticsDurationSeconds() {
+    if (!analyticsGameStartedAt) {
+        return null;
+    }
+
+    return Math.max(
+        0,
+        Math.round(
+            (Date.now() - analyticsGameStartedAt) / 1000
+        )
+    );
+}
+
+
+function trackEvent(eventType, details = {}) {
+    if (localDevelopmentHosts.includes(window.location.hostname)) {
+        return;
+    }
+
+    const payload = {
+        event_type: eventType,
+        game_mode: gameMode,
+        challenge_date: currentDateKey(),
+        session_id: analyticsSessionId,
+        device_type: analyticsDeviceType(),
+        ...details
+    };
+
+    fetch("/api/event", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        keepalive: true
+    }).catch(error => {
+        console.warn(
+            "Analytics event could not be sent.",
+            error
+        );
+    });
+}
 
 function startMode(selectedMode) {
     gameMode = selectedMode;
 
     resetGameState();
 
-    modeLabelElement.textContent =
+analyticsSessionId =
+    createAnalyticsSessionId();
+
+analyticsGameStartedAt =
+    Date.now();
+
+trackEvent("game_started");
+
+modeLabelElement.textContent =
         gameMode === "daily"
             ? "Today's Challenge"
             : "Practice Mode";
@@ -1453,9 +1525,20 @@ map.on(
         score += points;
 
         roundScores.push(points);
-        roundDistances.push(km);
+roundDistances.push(km);
 
-        scoreElement.textContent =
+trackEvent(
+    "round_completed",
+    {
+        round_number: round,
+        location_name: current.name,
+        location_category: current.category,
+        round_score: points,
+        distance_km: Number(km.toFixed(3))
+    }
+);
+
+scoreElement.textContent =
             score;
 
         progressFill.style.width =
@@ -1765,10 +1848,19 @@ function showFinalResult() {
     recordCompletedGame();
 
     if (gameMode === "daily") {
-        saveDailyResult();
-    }
+    saveDailyResult();
+}
 
-    resultElement.innerHTML =
+trackEvent(
+    "game_completed",
+    {
+        final_score: score,
+        duration_seconds:
+            analyticsDurationSeconds()
+    }
+);
+
+resultElement.innerHTML =
         finalResultHtml({
             finalScore: score,
             resultTitle: titleForScore(score),
@@ -1897,6 +1989,18 @@ return [
 
 
 async function shareScore() {
+    trackEvent(
+        "share_clicked",
+        {
+            final_score:
+                gameMode === "daily"
+                    ? getSavedDailyResult()?.score ?? score
+                    : score,
+            duration_seconds:
+                analyticsDurationSeconds()
+        }
+    );
+
     const text =
         shareText();
 
