@@ -1082,3 +1082,29 @@ header .brand-wordmark {
 .start-intro {
     font-weight: 400;
 }
+@media (max-width: 650px) {
+
+    .result-modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 68dvh;
+        overflow: hidden;
+        padding: 8px;
+    }
+
+    .result-modal #result {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+    }
+
+    .result-modal #nextButton {
+        flex: 0 0 auto;
+        position: relative;
+        z-index: 2;
+        margin-top: 8px;
+    }
+
+}
