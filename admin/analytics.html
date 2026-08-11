@@ -1,0 +1,21 @@
+ document.getElementById("shares").textContent =
+                summary.shares ?? 0;
+
+            status.textContent =
+                "Live data from CornwallTap analytics.";
+
+        } catch (error) {
+            console.error(error);
+
+            status.textContent =
+                "Unable to load analytics.";
+
+            status.classList.add("error");
+        }
+    }
+
+    loadAnalytics();
+</script>
+
+</body>
+</html>
