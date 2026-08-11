@@ -6,7 +6,25 @@
 <meta name="robots" content="noindex, nofollow">
 <title>CornwallTap Analytics</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:#eef9fa;color:#08213f}header{background:#00485a;color:white;padding:22px;text-align:center}header h1{margin:0;font-size:28px}header .tap{color:#18b8c3}header p{margin:6px 0 0;opacity:.85}main{width:min(1000px,calc(100% - 32px));margin:40px auto}.heading{margin-bottom:24px}.heading h2{margin:0 0 6px;font-size:26px}.heading p{margin:0;color:#58717a}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:white;border-radius:16px;padding:24px;box-shadow:0 8px 24px rgba(0,55,70,.08)}.label{color:#58717a;font-size:14px;font-weight:bold;margin-bottom:10px}.value{font-size:34px;font-weight:800;color:#00779b}.wide{grid-column:span 2}.status{margin-top:24px;font-size:13px;color:#71858b}.error{color:#a52626}@media(max-width:750px){.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:480px){main{margin-top:24px}.stats{grid-template-columns:1fr}.wide{grid-column:span 1}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:#eef9fa;color:#08213f}
+header{background:#00485a;color:#fff;padding:22px;text-align:center}
+header h1{margin:0;font-size:28px}header .tap{color:#18b8c3}header p{margin:6px 0 0;opacity:.85}
+main{width:min(1100px,calc(100% - 32px));margin:40px auto 60px}
+.heading{margin-bottom:24px}.heading h2,.section-title{margin:0 0 6px}.heading p,.muted{margin:0;color:#58717a}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card,.panel{background:#fff;border-radius:16px;padding:24px;box-shadow:0 8px 24px rgba(0,55,70,.08)}
+.label{color:#58717a;font-size:14px;font-weight:bold;margin-bottom:10px}.value{font-size:34px;font-weight:800;color:#00779b}
+.wide{grid-column:span 2}.section{margin-top:32px}.section-head{margin-bottom:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #dcebed}
+th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}
+.bars{display:grid;gap:12px}.bar-row{display:grid;grid-template-columns:90px 1fr 42px;gap:10px;align-items:center;font-size:13px}
+.bar-track{height:10px;background:#e3f1f3;border-radius:999px;overflow:hidden}.bar-fill{height:100%;background:#0788a8;border-radius:999px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 16px;color:#58717a;font-size:13px}
+.status{margin-top:24px;font-size:13px;color:#71858b}.error{color:#a52626}.empty{color:#71858b;padding:8px 0}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+@media(max-width:480px){main{margin-top:24px}.stats{grid-template-columns:1fr}.wide{grid-column:span 1}.card,.panel{padding:18px}.table-wrap{overflow-x:auto}}
 </style>
 </head>
 <body>
@@ -20,35 +38,81 @@
 <div class="card"><div class="label">Completion rate</div><div class="value" id="completionRate">—</div></div>
 <div class="card wide"><div class="label">Average Daily score</div><div class="value" id="averageScore">—</div></div>
 <div class="card"><div class="label">Average game time</div><div class="value" id="averageTime">—</div></div>
-<div class="card"><div class="label">Shares</div><div class="value" id="shares">—</div></div>
+<div class="card"><div class="label">Share rate</div><div class="value" id="shareRate">—</div></div>
 </div>
+
+<section class="section">
+<div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Players, starts and completions by challenge date.</p></div>
+<div class="panel"><div id="activity" class="bars"></div></div>
+</section>
+
+<section class="section grid-2">
+<div>
+<div class="section-head"><h2 class="section-title">Daily vs Practice</h2><p class="muted">Today's mode usage.</p></div>
+<div class="panel table-wrap"><table><thead><tr><th>Mode</th><th class="num">Players</th><th class="num">Started</th><th class="num">Completed</th></tr></thead><tbody id="modes"></tbody></table></div>
+</div>
+<div>
+<div class="section-head"><h2 class="section-title">Sharing</h2><p class="muted">Sharing after completed games.</p></div>
+<div class="panel"><div class="label">Shares today</div><div class="value" id="shares">—</div><p class="muted" id="shareNote"></p></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-head"><h2 class="section-title">Location performance</h2><p class="muted">Last 7 days, hardest locations first by average round score.</p></div>
+<div class="panel table-wrap"><table><thead><tr><th>Location</th><th>Type</th><th class="num">Plays</th><th class="num">Avg score</th><th class="num">Avg distance</th></tr></thead><tbody id="locations"></tbody></table></div>
+</section>
+
 <div class="status" id="status">Loading analytics…</div>
 </main>
 <script>
 function formatDuration(seconds){
  if(seconds===null||seconds===undefined)return "—";
- const mins=Math.floor(seconds/60); const secs=Math.round(seconds%60);
+ const mins=Math.floor(seconds/60),secs=Math.round(seconds%60);
  return `${mins}m ${secs}s`;
+}
+function escapeHtml(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function renderActivity(rows){
+ const el=document.getElementById("activity");
+ if(!rows.length){el.innerHTML='<div class="empty">No 7-day activity yet.</div>';return;}
+ const max=Math.max(1,...rows.map(r=>Number(r.games_started)||0));
+ el.innerHTML=rows.map(r=>{
+  const started=Number(r.games_started)||0,completed=Number(r.games_completed)||0,players=Number(r.unique_players)||0;
+  const width=Math.max(2,(started/max)*100);
+  return `<div class="bar-row"><strong>${escapeHtml(r.date.slice(5))}</strong><div class="bar-track" title="${started} starts, ${completed} completions"><div class="bar-fill" style="width:${width}%"></div></div><span>${players}</span></div>`;
+ }).join("")+'<div class="legend"><span>Bar = games started</span><span>Number = unique players</span></div>';
+}
+function renderModes(rows){
+ const el=document.getElementById("modes");
+ el.innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.game_mode||"unknown")}</td><td class="num">${r.unique_players??0}</td><td class="num">${r.games_started??0}</td><td class="num">${r.games_completed??0}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No mode activity today.</td></tr>';
+}
+function renderLocations(rows){
+ const el=document.getElementById("locations");
+ el.innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${escapeHtml(r.location_name)}</strong></td><td>${escapeHtml(r.location_category||"—")}</td><td class="num">${r.times_played??0}</td><td class="num">${r.average_score??"—"}</td><td class="num">${r.average_distance_km===null?"—":`${r.average_distance_km} km`}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No location data yet.</td></tr>';
 }
 async function loadAnalytics(){
  const status=document.getElementById("status");
  try{
   const response=await fetch("/api/analytics",{cache:"no-store"});
-  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const data=await response.json();
-  if(!data.ok) throw new Error(data.error||"Analytics request failed");
-  const summary=data.summary;
+  if(!data.ok)throw new Error(data.error||"Analytics request failed");
+  const s=data.summary||{};
   document.getElementById("reportDate").textContent=data.date;
-  document.getElementById("players").textContent=summary.unique_players??0;
-  document.getElementById("started").textContent=summary.games_started??0;
-  document.getElementById("completed").textContent=summary.games_completed??0;
-  document.getElementById("completionRate").textContent=`${summary.completion_rate??0}%`;
-  document.getElementById("averageScore").textContent=summary.average_daily_score!==null?`${summary.average_daily_score} / 500`:"—";
-  document.getElementById("averageTime").textContent=formatDuration(summary.average_duration_seconds);
-  document.getElementById("shares").textContent=summary.shares??0;
+  document.getElementById("players").textContent=s.unique_players??0;
+  document.getElementById("started").textContent=s.games_started??0;
+  document.getElementById("completed").textContent=s.games_completed??0;
+  document.getElementById("completionRate").textContent=`${s.completion_rate??0}%`;
+  document.getElementById("averageScore").textContent=s.average_daily_score!==null?`${s.average_daily_score} / 500`:"—";
+  document.getElementById("averageTime").textContent=formatDuration(s.average_duration_seconds);
+  document.getElementById("shareRate").textContent=`${s.share_rate??0}%`;
+  document.getElementById("shares").textContent=s.shares??0;
+  document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed game${Number(s.games_completed)===1?"":"s"}.`;
+  renderActivity(data.activity||[]);renderModes(data.modes||[]);renderLocations(data.locations||[]);
   status.textContent="Live data from CornwallTap analytics.";
  }catch(error){
-  console.error(error); status.textContent="Unable to load analytics."; status.classList.add("error");
+  console.error(error);status.textContent="Unable to load analytics.";status.classList.add("error");
  }
 }
 loadAnalytics();
