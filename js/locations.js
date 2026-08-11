@@ -1500,5 +1500,305 @@ const locations = [
         region: "Isles of Scilly",
         parish: "St Agnes",
         verified: true
+    },
+
+    {
+        id: 101,
+        name: "Rock",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.54448400,
+        lon: -4.91518100,
+        tolerance: 1.000,
+        fact: "Rock sits on the eastern side of the Camel Estuary opposite Padstow and is well known for sailing and watersports.",
+        region: "North Cornwall",
+        parish: "St Minver Lowlands",
+        verified: true
+    },
+
+    {
+        id: 102,
+        name: "Polzeath",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.57283900,
+        lon: -4.91490100,
+        tolerance: 0.900,
+        fact: "Polzeath is a popular north-coast surfing village backed by a broad sandy beach.",
+        region: "North Cornwall",
+        parish: "St Minver Lowlands",
+        verified: true
+    },
+
+    {
+        id: 103,
+        name: "Mawgan Porth",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.46522300,
+        lon: -5.03016700,
+        tolerance: 1.000,
+        fact: "Mawgan Porth is a coastal village north of Newquay, set around a sandy beach at the mouth of the River Menalhyl.",
+        region: "North Cornwall",
+        parish: "Mawgan-in-Pydar",
+        verified: true
+    },
+
+    {
+        id: 104,
+        name: "Widemouth Bay",
+        category: "Beach",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.79099500,
+        lon: -4.55512600,
+        tolerance: 1.000,
+        fact: "Widemouth Bay is a wide Atlantic beach just south of Bude and is well known for surfing.",
+        region: "North Cornwall",
+        parish: "Poundstock",
+        verified: true
+    },
+
+    {
+        id: 105,
+        name: "Crackington Haven",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.74116400,
+        lon: -4.63202000,
+        tolerance: 0.800,
+        fact: "Crackington Haven is known for dramatic folded Carboniferous cliffs that are especially visible around the cove.",
+        region: "North Cornwall",
+        parish: "St Gennys",
+        verified: true
+    },
+
+    {
+        id: 106,
+        name: "Trebarwith Strand",
+        category: "Beach",
+        difficulty: 6,
+        scoreProfile: "natural_standard",
+        lat: 50.64462000,
+        lon: -4.76154000,
+        tolerance: 0.500,
+        fact: "Trebarwith Strand is a tidal beach south of Tintagel where slate was once shipped from nearby quarries.",
+        region: "North Cornwall",
+        parish: "Tintagel",
+        verified: true
+    },
+
+    {
+        id: 107,
+        name: "King Harry Ferry",
+        category: "Landmark",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.21682500,
+        lon: -5.02796600,
+        tolerance: 0.450,
+        fact: "The King Harry Ferry has carried traffic across the River Fal since 1888 and is one of England's few chain ferries.",
+        region: "Mid Cornwall",
+        parish: "",
+        verified: true
+    },
+
+    {
+        id: 108,
+        name: "Bodmin Beacon",
+        category: "Landmark",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.46524000,
+        lon: -4.72419000,
+        tolerance: 0.500,
+        fact: "Bodmin Beacon is crowned by the 44-metre Gilbert Monument, built in memory of Sir Walter Raleigh Gilbert.",
+        region: "Mid Cornwall",
+        parish: "Bodmin",
+        verified: true
+    },
+
+    {
+        id: 109,
+        name: "Lanhydrock House",
+        category: "Historic House",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.44099600,
+        lon: -4.69800900,
+        tolerance: 0.400,
+        fact: "Much of Lanhydrock was rebuilt after a devastating fire in 1881 and the estate passed to the National Trust in 1954.",
+        region: "Mid Cornwall",
+        parish: "Lanhydrock",
+        verified: true
+    },
+
+    {
+        id: 110,
+        name: "St Minver",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.55874000,
+        lon: -4.87304000,
+        tolerance: 0.700,
+        fact: "St Minver lies inland from the Camel Estuary and is the historic parish centre for the surrounding coastal area.",
+        region: "North Cornwall",
+        parish: "St Minver Highlands",
+        verified: true
+    },
+
+    {
+        id: 111,
+        name: "Delabole",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.62318000,
+        lon: -4.73190000,
+        tolerance: 0.900,
+        fact: "Delabole grew around its famous slate quarry, one of the best-known historic slate workings in Cornwall.",
+        region: "North Cornwall",
+        parish: "Delabole",
+        verified: true
+    },
+
+    {
+        id: 112,
+        name: "Dodman Point",
+        category: "Headland",
+        difficulty: 7,
+        scoreProfile: "natural_remote",
+        lat: 50.22048300,
+        lon: -4.80157100,
+        tolerance: 0.500,
+        fact: "Dodman Point is a prominent headland on Cornwall's south coast, projecting into Veryan Bay.",
+        region: "Mid Cornwall",
+        parish: "St Goran",
+        verified: true
+    },
+
+    {
+        id: 113,
+        name: "Holywell Bay",
+        category: "Beach",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.38704500,
+        lon: -5.14131500,
+        tolerance: 1.200,
+        fact: "Holywell Bay is known for the twin offshore Gull Rocks and a cave associated with the bay's 'holy well'.",
+        region: "Mid Cornwall",
+        parish: "Cubert",
+        verified: true
+    },
+
+    {
+        id: 114,
+        name: "Gorran Haven",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.24124000,
+        lon: -4.79241600,
+        tolerance: 1.000,
+        fact: "Gorran Haven is a sheltered fishing village on Cornwall's south coast with a small harbour and sandy beach.",
+        region: "Mid Cornwall",
+        parish: "St Goran",
+        verified: true
+    },
+
+    {
+        id: 115,
+        name: "St Breward",
+        category: "Village",
+        difficulty: 8,
+        scoreProfile: "settlement_standard",
+        lat: 50.55649000,
+        lon: -4.69175000,
+        tolerance: 0.700,
+        fact: "St Breward is a granite village on the western edge of Bodmin Moor, close to extensive moorland quarries.",
+        region: "North Cornwall",
+        parish: "St Breward",
+        verified: true
+    },
+
+    {
+        id: 116,
+        name: "Blisland",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.52803800,
+        lon: -4.68330900,
+        tolerance: 0.700,
+        fact: "Blisland is a moorland-edge village centred on a large village green.",
+        region: "North Cornwall",
+        parish: "Blisland",
+        verified: true
+    },
+
+    {
+        id: 117,
+        name: "St Kew",
+        category: "Village",
+        difficulty: 8,
+        scoreProfile: "settlement_standard",
+        lat: 50.55760000,
+        lon: -4.79400000,
+        tolerance: 0.700,
+        fact: "St Kew is an inland North Cornwall village known for its medieval parish church and rural setting east of Wadebridge.",
+        region: "North Cornwall",
+        parish: "St Kew",
+        verified: true
+    },
+
+    {
+        id: 118,
+        name: "Portscatho",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.17916900,
+        lon: -4.97579800,
+        tolerance: 0.700,
+        fact: "Portscatho is a former pilchard-fishing village on the Roseland Peninsula with a small harbour on Gerrans Bay.",
+        region: "Mid Cornwall",
+        parish: "Gerrans",
+        verified: true
+    },
+
+    {
+        id: 119,
+        name: "Davidstow",
+        category: "Village",
+        difficulty: 8,
+        scoreProfile: "settlement_standard",
+        lat: 50.65342000,
+        lon: -4.61262000,
+        tolerance: 1.500,
+        fact: "Davidstow is a moorland village known for its former Second World War RAF airfield and nearby cheese creamery.",
+        region: "North Cornwall",
+        parish: "Davidstow",
+        verified: true
+    },
+
+    {
+        id: 120,
+        name: "Colliford Reservoir",
+        category: "Reservoir",
+        difficulty: 7,
+        scoreProfile: "natural_remote",
+        lat: 50.52361100,
+        lon: -4.57583300,
+        tolerance: 2.000,
+        fact: "Colliford Lake is a major reservoir on Bodmin Moor with a surface area of about 3.8 square kilometres.",
+        region: "East Cornwall",
+        parish: "St Neot",
+        verified: true
     }
 ];

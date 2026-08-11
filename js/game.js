@@ -11,7 +11,8 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const totalRounds = 5;
+const standardTotalRounds = 5;
+let totalRounds = standardTotalRounds;
 
 const difficultyBands = [
     { min: 1, max: 2 },
@@ -171,6 +172,11 @@ const dailyLockBypass =
         window.location.hostname
     );
 
+const draftTestAvailable =
+    localDevelopmentHosts.includes(
+        window.location.hostname
+    );
+
 let gameMode = null;
 let round = 1;
 let score = 0;
@@ -207,6 +213,13 @@ const dailyStartButton =
 const practiceStartButton =
     document.getElementById("practiceStartButton");
 
+const draftTestButton =
+    document.getElementById("draftTestButton");
+
+if (draftTestAvailable && draftTestButton) {
+    draftTestButton.classList.remove("hidden");
+}
+
 const statsButton =
     document.getElementById("statsButton");
 
@@ -239,6 +252,9 @@ const categoryElement =
 
 const roundElement =
     document.getElementById("round");
+
+const roundTotalElement =
+    document.getElementById("roundTotal");
 
 const roundStageElement =
     document.getElementById("roundStage");
@@ -1275,9 +1291,26 @@ function selectPracticeLocation() {
 
 
 
+function selectDraftTestLocation() {
+    current =
+        locations[round - 1];
+
+    if (!current) {
+        throw new Error(
+            `No draft test location exists for round ${round}.`
+        );
+    }
+}
+
+
 function selectLocation() {
     if (gameMode === "daily") {
         selectDailyLocation();
+        return;
+    }
+
+    if (gameMode === "draft_test") {
+        selectDraftTestLocation();
         return;
     }
 
@@ -1428,6 +1461,11 @@ function trackEvent(eventType, details = {}) {
 function startMode(selectedMode) {
     gameMode = selectedMode;
 
+    totalRounds =
+        gameMode === "draft_test"
+            ? locations.length
+            : standardTotalRounds;
+
     resetGameState();
 
     analyticsPlayerId =
@@ -1444,10 +1482,17 @@ trackEvent("game_started");
 modeLabelElement.textContent =
         gameMode === "daily"
             ? "Today's Challenge"
-            : "Practice Mode";
+            : gameMode === "draft_test"
+                ? "Draft Location Test"
+                : "Practice Mode";
 
     challengeDateElement.textContent =
         displayDate();
+
+    if (roundTotalElement) {
+        roundTotalElement.textContent =
+            totalRounds;
+    }
 
     showGameScreen();
     startRound();
@@ -1481,7 +1526,9 @@ function startRound() {
 
     roundElement.textContent = round;
     roundStageElement.textContent =
-        roundStage(round).name;
+        gameMode === "draft_test"
+            ? `Draft ${round} of ${totalRounds}`
+            : roundStage(round).name;
     scoreElement.textContent = score;
 
     updateProgress();
@@ -1659,7 +1706,11 @@ scoreElement.textContent =
             <div class="result-card">
 
                 <div class="round-result-stage">
-                    ${roundStage(round).name}
+                    ${
+                        gameMode === "draft_test"
+                            ? `Draft ${round} of ${totalRounds}`
+                            : roundStage(round).name
+                    }
                 </div>
 
                 <div class="result-category">
@@ -1689,7 +1740,7 @@ scoreElement.textContent =
                 </div>
 
                 ${
-                    developerMode
+                    (developerMode || gameMode === "draft_test")
                         ? `
                             <div class="diagnostic-note">
                                 Zero-score distance:
@@ -1707,7 +1758,7 @@ scoreElement.textContent =
                 </div>
 
                 ${
-                    developerMode
+                    (developerMode || gameMode === "draft_test")
                         ? `
                             <div class="developer-data">
                                 Target:
@@ -1730,7 +1781,11 @@ scoreElement.textContent =
 
         nextButton.textContent =
             round === totalRounds
-                ? "See final result"
+                ? (
+                    gameMode === "draft_test"
+                        ? "Finish draft test"
+                        : "See final result"
+                )
                 : "Continue";
 
         setTimeout(
@@ -2169,6 +2224,25 @@ nextButton.addEventListener(
             return;
         }
 
+        if (
+            gameMode === "draft_test" &&
+            round === totalRounds
+        ) {
+            showToast(
+                `All ${totalRounds} draft locations tested`
+            );
+
+            totalRounds = standardTotalRounds;
+
+            if (roundTotalElement) {
+                roundTotalElement.textContent =
+                    totalRounds;
+            }
+
+            showStartScreen();
+            return;
+        }
+
         if (round === totalRounds) {
             showFinalResult();
             return;
@@ -2202,6 +2276,20 @@ practiceStartButton.addEventListener(
         startMode("practice");
     }
 );
+
+
+if (draftTestButton) {
+    draftTestButton.addEventListener(
+        "click",
+        function () {
+            if (!draftTestAvailable) {
+                return;
+            }
+
+            startMode("draft_test");
+        }
+    );
+}
 
 
 statsButton.addEventListener(
