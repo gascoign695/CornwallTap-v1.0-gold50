@@ -18,7 +18,15 @@ const difficultyBands = [
     { min: 3, max: 4 },
     { min: 5, max: 6 },
     { min: 7, max: 8 },
-    { min: 9, max: 10 }
+    { min: 7, max: 10 }
+];
+
+const dailyExcludedLocationIds = [
+    20,
+    45,
+    46,
+    47,
+    50
 ];
 
 const roundStages = [
@@ -1135,15 +1143,54 @@ function seededRandom(seed) {
 }
 
 
+function dailyDayNumber(dateKey) {
+    const date =
+        new Date(`${dateKey}T00:00:00Z`);
+
+    const epoch =
+        new Date("2026-08-11T00:00:00Z");
+
+    return Math.floor(
+        (date - epoch) /
+        (24 * 60 * 60 * 1000)
+    );
+}
+
+
+function dailyLocationOrder(possible, band) {
+    return [...possible].sort(
+        (first, second) => {
+            const firstSeed =
+                textSeed(
+                    `cornwalltap-band-${band.min}-${band.max}-location-${first.id}`
+                );
+
+            const secondSeed =
+                textSeed(
+                    `cornwalltap-band-${band.min}-${band.max}-location-${second.id}`
+                );
+
+            return firstSeed - secondSeed;
+        }
+    );
+}
+
+
 function selectDailyLocation() {
     const band =
         difficultyBandForRound(round);
 
+    /*
+    Build the full stable pool first.
+    Do not remove today's earlier rounds yet,
+    otherwise the rotation order changes.
+    */
     const possible =
         locations.filter(
             location =>
                 location.difficulty >= band.min &&
-                location.difficulty <= band.max
+                location.difficulty <= band.max &&
+                !dailyExcludedLocationIds.includes(location.id)
         );
 
     if (possible.length === 0) {
@@ -1152,18 +1199,49 @@ function selectDailyLocation() {
         );
     }
 
-    const seed =
-        textSeed(
-            `${currentDateKey()}-cornwalltap-round-${round}`
+    const ordered =
+        dailyLocationOrder(
+            possible,
+            band
         );
 
-    const selectedIndex =
-        Math.floor(
-            seededRandom(seed) * possible.length
+    const dayNumber =
+        dailyDayNumber(
+            currentDateKey()
         );
 
-    current =
-        possible[selectedIndex];
+    /*
+    Start at today's deterministic position,
+    then move forward through the stable rotation
+    until we find a location not already used today.
+    */
+    for (
+        let offset = 0;
+        offset < ordered.length;
+        offset += 1
+    ) {
+        const selectedIndex =
+            (
+                dayNumber +
+                offset
+            ) % ordered.length;
+
+        const candidate =
+            ordered[selectedIndex];
+
+        if (
+            !roundLocations.includes(
+                candidate.name
+            )
+        ) {
+            current = candidate;
+            return;
+        }
+    }
+
+    throw new Error(
+        `No unused Daily locations available for difficulty ${band.min}-${band.max}.`
+    );
 }
 
 
