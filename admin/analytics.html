@@ -30,19 +30,19 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}
 <body>
 <header><h1>Cornwall<span class="tap">Tap</span> Analytics</h1><p>Game performance dashboard</p></header>
 <main>
-<div class="heading"><h2>Today</h2><p id="reportDate">Loading...</p></div>
+<div class="heading"><h2>Today — Daily Challenge</h2><p id="reportDate">Loading...</p></div>
 <div class="stats">
-<div class="card"><div class="label">Unique players</div><div class="value" id="players">—</div></div>
-<div class="card"><div class="label">Games started</div><div class="value" id="started">—</div></div>
-<div class="card"><div class="label">Games completed</div><div class="value" id="completed">—</div></div>
-<div class="card"><div class="label">Completion rate</div><div class="value" id="completionRate">—</div></div>
+<div class="card"><div class="label">Unique Daily players</div><div class="value" id="players">—</div></div>
+<div class="card"><div class="label">Daily games started</div><div class="value" id="started">—</div></div>
+<div class="card"><div class="label">Daily games completed</div><div class="value" id="completed">—</div></div>
+<div class="card"><div class="label">Daily completion rate</div><div class="value" id="completionRate">—</div></div>
 <div class="card wide"><div class="label">Average Daily score</div><div class="value" id="averageScore">—</div></div>
-<div class="card"><div class="label">Average game time</div><div class="value" id="averageTime">—</div></div>
-<div class="card"><div class="label">Share rate</div><div class="value" id="shareRate">—</div></div>
+<div class="card"><div class="label">Average Daily game time</div><div class="value" id="averageTime">—</div></div>
+<div class="card"><div class="label">Daily share rate</div><div class="value" id="shareRate">—</div></div>
 </div>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Players, starts and completions by challenge date.</p></div>
+<div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Daily Challenge players, starts and completions by challenge date.</p></div>
 <div class="panel"><div id="activity" class="bars"></div></div>
 </section>
 
@@ -52,13 +52,13 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}
 <div class="panel table-wrap"><table><thead><tr><th>Mode</th><th class="num">Players</th><th class="num">Started</th><th class="num">Completed</th></tr></thead><tbody id="modes"></tbody></table></div>
 </div>
 <div>
-<div class="section-head"><h2 class="section-title">Sharing</h2><p class="muted">Sharing after completed games.</p></div>
+<div class="section-head"><h2 class="section-title">Sharing</h2><p class="muted">Sharing after completed Daily Challenge games.</p></div>
 <div class="panel"><div class="label">Shares today</div><div class="value" id="shares">—</div><p class="muted" id="shareNote"></p></div>
 </div>
 </section>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Location performance</h2><p class="muted">Last 7 days, hardest locations first by average round score.</p></div>
+<div class="section-head"><h2 class="section-title">Location performance</h2><p class="muted">Daily + Practice, last 7 days. Hardest locations first by average round score.</p></div>
 <div class="panel table-wrap"><table><thead><tr><th>Location</th><th>Type</th><th class="num">Plays</th><th class="num">Avg score</th><th class="num">Avg distance</th></tr></thead><tbody id="locations"></tbody></table></div>
 </section>
 
@@ -108,7 +108,7 @@ async function loadAnalytics(){
   document.getElementById("averageTime").textContent=formatDuration(s.average_duration_seconds);
   document.getElementById("shareRate").textContent=`${s.share_rate??0}%`;
   document.getElementById("shares").textContent=s.shares??0;
-  document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed game${Number(s.games_completed)===1?"":"s"}.`;
+  document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed Daily game${Number(s.games_completed)===1?"":"s"}.`;
   renderActivity(data.activity||[]);renderModes(data.modes||[]);renderLocations(data.locations||[]);
   status.textContent="Live data from CornwallTap analytics.";
  }catch(error){

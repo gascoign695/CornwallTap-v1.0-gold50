@@ -9,12 +9,12 @@ export async function onRequestGet(context) {
 
         const summary = await context.env.DB.prepare(`
             SELECT
-                COUNT(DISTINCT CASE WHEN event_type = 'game_started' THEN player_id END) AS unique_players,
-                COUNT(DISTINCT CASE WHEN event_type = 'game_started' THEN session_id END) AS games_started,
-                COUNT(DISTINCT CASE WHEN event_type = 'game_completed' THEN session_id END) AS games_completed,
+                COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN player_id END) AS unique_players,
+                COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN session_id END) AS games_started,
+                COUNT(DISTINCT CASE WHEN event_type = 'game_completed' AND game_mode = 'daily' THEN session_id END) AS games_completed,
                 ROUND(
-                    100.0 * COUNT(DISTINCT CASE WHEN event_type = 'game_completed' THEN session_id END)
-                    / NULLIF(COUNT(DISTINCT CASE WHEN event_type = 'game_started' THEN session_id END), 0),
+                    100.0 * COUNT(DISTINCT CASE WHEN event_type = 'game_completed' AND game_mode = 'daily' THEN session_id END)
+                    / NULLIF(COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN session_id END), 0),
                     1
                 ) AS completion_rate,
                 ROUND(
@@ -31,15 +31,16 @@ export async function onRequestGet(context) {
                     AVG(
                         CASE
                             WHEN event_type = 'game_completed'
+                            AND game_mode = 'daily'
                             THEN duration_seconds
                         END
                     ),
                     0
                 ) AS average_duration_seconds,
-                COUNT(DISTINCT CASE WHEN event_type = 'share_clicked' THEN session_id END) AS shares,
+                COUNT(DISTINCT CASE WHEN event_type = 'share_clicked' AND game_mode = 'daily' THEN session_id END) AS shares,
                 ROUND(
-                    100.0 * COUNT(DISTINCT CASE WHEN event_type = 'share_clicked' THEN session_id END)
-                    / NULLIF(COUNT(DISTINCT CASE WHEN event_type = 'game_completed' THEN session_id END), 0),
+                    100.0 * COUNT(DISTINCT CASE WHEN event_type = 'share_clicked' AND game_mode = 'daily' THEN session_id END)
+                    / NULLIF(COUNT(DISTINCT CASE WHEN event_type = 'game_completed' AND game_mode = 'daily' THEN session_id END), 0),
                     1
                 ) AS share_rate
             FROM game_events
@@ -57,6 +58,7 @@ export async function onRequestGet(context) {
             WHERE challenge_date >= date(?, '-6 days')
               AND challenge_date <= ?
               AND player_id IS NOT NULL
+              AND game_mode = 'daily'
             GROUP BY challenge_date
             ORDER BY challenge_date
         `).bind(today, today).all();
