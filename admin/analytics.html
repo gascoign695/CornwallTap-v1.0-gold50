@@ -18,7 +18,7 @@ main{width:min(1100px,calc(100% - 32px));margin:40px auto 60px}
 .wide{grid-column:span 2}.section{margin-top:32px}.section-head{margin-bottom:14px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #dcebed}
-th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}
+th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortable{cursor:pointer;user-select:none;white-space:nowrap}.sortable:hover{color:#00779b}.sort-indicator{display:inline-block;min-width:12px;margin-left:3px;color:#00779b}
 .bars{display:grid;gap:12px}.bar-row{display:grid;grid-template-columns:90px 1fr 42px;gap:10px;align-items:center;font-size:13px}
 .bar-track{height:10px;background:#e3f1f3;border-radius:999px;overflow:hidden}.bar-fill{height:100%;background:#0788a8;border-radius:999px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 16px;color:#58717a;font-size:13px}
@@ -58,12 +58,20 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}
 </section>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Location performance</h2><p class="muted">Daily + Practice, last 7 days. Hardest locations first by average round score.</p></div>
-<div class="panel table-wrap"><table><thead><tr><th>Location</th><th>Type</th><th class="num">Plays</th><th class="num">Avg score</th><th class="num">Avg distance</th></tr></thead><tbody id="locations"></tbody></table></div>
+<div class="section-head"><h2 class="section-title">Location performance</h2><p class="muted">Daily + Practice, last 7 days. Click a column heading to sort.</p></div>
+<div class="panel table-wrap"><table><thead><tr>
+<th class="sortable" data-sort="location_name">Location <span class="sort-indicator"></span></th>
+<th class="sortable" data-sort="location_category">Type <span class="sort-indicator"></span></th>
+<th class="num sortable" data-sort="difficulty">Difficulty <span class="sort-indicator"></span></th>
+<th class="num sortable" data-sort="times_played">Plays <span class="sort-indicator"></span></th>
+<th class="num sortable" data-sort="average_score">Avg score <span class="sort-indicator"></span></th>
+<th class="num sortable" data-sort="average_distance_km">Avg distance <span class="sort-indicator"></span></th>
+</tr></thead><tbody id="locations"></tbody></table></div>
 </section>
 
 <div class="status" id="status">Loading analytics…</div>
 </main>
+<script src="/js/locations.js"></script>
 <script>
 function formatDuration(seconds){
  if(seconds===null||seconds===undefined)return "—";
@@ -87,10 +95,73 @@ function renderModes(rows){
  const el=document.getElementById("modes");
  el.innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.game_mode||"unknown")}</td><td class="num">${r.unique_players??0}</td><td class="num">${r.games_started??0}</td><td class="num">${r.games_completed??0}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No mode activity today.</td></tr>';
 }
-function renderLocations(rows){
- const el=document.getElementById("locations");
- el.innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${escapeHtml(r.location_name)}</strong></td><td>${escapeHtml(r.location_category||"—")}</td><td class="num">${r.times_played??0}</td><td class="num">${r.average_score??"—"}</td><td class="num">${r.average_distance_km===null?"—":`${r.average_distance_km} km`}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No location data yet.</td></tr>';
+let locationRows=[];
+let locationSort={key:"average_score",direction:"asc"};
+
+function locationDifficulty(name){
+ const match=Array.isArray(locations)
+  ? locations.find(location=>location.name===name)
+  : null;
+ return match?.difficulty??null;
 }
+
+function sortableValue(row,key){
+ if(key==="difficulty")return row.difficulty;
+ return row[key];
+}
+
+function compareLocationRows(a,b){
+ const key=locationSort.key;
+ const direction=locationSort.direction==="asc"?1:-1;
+ const av=sortableValue(a,key),bv=sortableValue(b,key);
+ if(av===null||av===undefined)return 1;
+ if(bv===null||bv===undefined)return -1;
+ if(typeof av==="number"||typeof bv==="number"){
+  return ((Number(av)||0)-(Number(bv)||0))*direction;
+ }
+ return String(av).localeCompare(String(bv),"en",{sensitivity:"base"})*direction;
+}
+
+function updateSortIndicators(){
+ document.querySelectorAll("th.sortable").forEach(header=>{
+  const indicator=header.querySelector(".sort-indicator");
+  if(!indicator)return;
+  indicator.textContent=header.dataset.sort===locationSort.key
+   ? (locationSort.direction==="asc"?"▲":"▼")
+   : "";
+ });
+}
+
+function renderLocations(rows=locationRows){
+ const el=document.getElementById("locations");
+ const sorted=[...rows].sort(compareLocationRows);
+ el.innerHTML=sorted.length?sorted.map(r=>`<tr><td><strong>${escapeHtml(r.location_name)}</strong></td><td>${escapeHtml(r.location_category||"—")}</td><td class="num">${r.difficulty??"—"}</td><td class="num">${r.times_played??0}</td><td class="num">${r.average_score??"—"}</td><td class="num">${r.average_distance_km===null?"—":`${r.average_distance_km} km`}</td></tr>`).join(""):'<tr><td colspan="6" class="empty">No location data yet.</td></tr>';
+ updateSortIndicators();
+}
+
+function setLocationRows(rows){
+ locationRows=(rows||[]).map(row=>({
+  ...row,
+  times_played:Number(row.times_played)||0,
+  average_score:row.average_score===null?null:Number(row.average_score),
+  average_distance_km:row.average_distance_km===null?null:Number(row.average_distance_km),
+  difficulty:locationDifficulty(row.location_name)
+ }));
+ renderLocations();
+}
+
+document.querySelectorAll("th.sortable").forEach(header=>{
+ header.addEventListener("click",()=>{
+  const key=header.dataset.sort;
+  if(locationSort.key===key){
+   locationSort.direction=locationSort.direction==="asc"?"desc":"asc";
+  }else{
+   locationSort.key=key;
+   locationSort.direction=["times_played","difficulty"].includes(key)?"desc":"asc";
+  }
+  renderLocations();
+ });
+});
 async function loadAnalytics(){
  const status=document.getElementById("status");
  try{
@@ -109,7 +180,7 @@ async function loadAnalytics(){
   document.getElementById("shareRate").textContent=`${s.share_rate??0}%`;
   document.getElementById("shares").textContent=s.shares??0;
   document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed Daily game${Number(s.games_completed)===1?"":"s"}.`;
-  renderActivity(data.activity||[]);renderModes(data.modes||[]);renderLocations(data.locations||[]);
+  renderActivity(data.activity||[]);renderModes(data.modes||[]);setLocationRows(data.locations||[]);
   status.textContent="Live data from CornwallTap analytics.";
  }catch(error){
   console.error(error);status.textContent="Unable to load analytics.";status.classList.add("error");

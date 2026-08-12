@@ -1691,6 +1691,7 @@ trackEvent(
         round_number: round,
         location_name: current.name,
         location_category: current.category,
+        location_difficulty: current.difficulty,
         round_score: points,
         distance_km: Number(km.toFixed(3))
     }

@@ -14,6 +14,7 @@ export async function onRequestPost(context) {
             round_number = null,
             location_name = null,
             location_category = null,
+            location_difficulty = null,
             round_score = null,
             distance_km = null
         } = payload;
@@ -47,10 +48,11 @@ export async function onRequestPost(context) {
                     round_number,
                     location_name,
                     location_category,
+                    location_difficulty,
                     round_score,
                     distance_km
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `)
             .bind(
                 event_type,
@@ -64,6 +66,7 @@ export async function onRequestPost(context) {
                 round_number,
                 location_name,
                 location_category,
+                location_difficulty,
                 round_score,
                 distance_km
             )
