@@ -11,8 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const standardTotalRounds = 5;
-let totalRounds = standardTotalRounds;
+const totalRounds = 5;
 
 const difficultyBands = [
     { min: 1, max: 2 },
@@ -172,11 +171,6 @@ const dailyLockBypass =
         window.location.hostname
     );
 
-const draftTestAvailable =
-    localDevelopmentHosts.includes(
-        window.location.hostname
-    );
-
 let gameMode = null;
 let round = 1;
 let score = 0;
@@ -213,13 +207,6 @@ const dailyStartButton =
 const practiceStartButton =
     document.getElementById("practiceStartButton");
 
-const draftTestButton =
-    document.getElementById("draftTestButton");
-
-if (draftTestAvailable && draftTestButton) {
-    draftTestButton.classList.remove("hidden");
-}
-
 const statsButton =
     document.getElementById("statsButton");
 
@@ -252,9 +239,6 @@ const categoryElement =
 
 const roundElement =
     document.getElementById("round");
-
-const roundTotalElement =
-    document.getElementById("roundTotal");
 
 const roundStageElement =
     document.getElementById("roundStage");
@@ -1160,11 +1144,8 @@ function seededRandom(seed) {
 
 
 function dailyDayNumber(dateKey) {
-    const date =
-        new Date(`${dateKey}T00:00:00Z`);
-
-    const epoch =
-        new Date("2026-08-11T00:00:00Z");
+    const date = new Date(`${dateKey}T00:00:00Z`);
+    const epoch = new Date("2026-08-14T00:00:00Z");
 
     return Math.floor(
         (date - epoch) /
@@ -1173,91 +1154,184 @@ function dailyDayNumber(dateKey) {
 }
 
 
+const dailySelectorVersion = "v3";
+const dailyRepeatProtectionDays = 19;
+const dailyMinimumSeparationKm = 15;
+const dailyEpochKey = "2026-08-14";
+
+
+function dateKeyFromDayNumber(dayNumber) {
+    const epoch = new Date(`${dailyEpochKey}T00:00:00Z`);
+    epoch.setUTCDate(epoch.getUTCDate() + dayNumber);
+    return epoch.toISOString().slice(0, 10);
+}
+
+
 function dailyLocationOrder(possible, band) {
     return [...possible].sort(
         (first, second) => {
-            const firstSeed =
-                textSeed(
-                    `cornwalltap-band-${band.min}-${band.max}-location-${first.id}`
-                );
+            const firstSeed = textSeed(
+                `cornwalltap-${dailySelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
+            );
+            const secondSeed = textSeed(
+                `cornwalltap-${dailySelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
+            );
 
-            const secondSeed =
-                textSeed(
-                    `cornwalltap-band-${band.min}-${band.max}-location-${second.id}`
-                );
-
-            return firstSeed - secondSeed;
+            return firstSeed - secondSeed || first.id - second.id;
         }
     );
 }
 
 
-function selectDailyLocation() {
-    const band =
-        difficultyBandForRound(round);
-
-    /*
-    Build the full stable pool first.
-    Do not remove today's earlier rounds yet,
-    otherwise the rotation order changes.
-    */
-    const possible =
-        locations.filter(
+function dailyPools() {
+    return difficultyBands.map(band => {
+        const possible = locations.filter(
             location =>
                 location.difficulty >= band.min &&
                 location.difficulty <= band.max &&
                 !dailyExcludedLocationIds.includes(location.id)
         );
 
-    if (possible.length === 0) {
+        if (possible.length === 0) {
+            throw new Error(
+                `No locations available for difficulty ${band.min}-${band.max}.`
+            );
+        }
+
+        return dailyLocationOrder(possible, band);
+    });
+}
+
+
+function farEnoughFromChallenge(candidate, challenge) {
+    return challenge.every(location =>
+        distanceInKm(
+            candidate.lat,
+            candidate.lon,
+            location.lat,
+            location.lon
+        ) >= dailyMinimumSeparationKm
+    );
+}
+
+
+function generateDailyChallenge(dateKey) {
+    const targetDayNumber = dailyDayNumber(dateKey);
+
+    if (targetDayNumber < 0) {
         throw new Error(
-            `No locations available for difficulty ${band.min}-${band.max}.`
+            `Daily selector ${dailySelectorVersion} only supports dates from ${dailyEpochKey}.`
         );
     }
 
-    const ordered =
-        dailyLocationOrder(
-            possible,
-            band
-        );
+    const pools = dailyPools();
+    const recentChallenges = [];
+    let targetChallenge = null;
 
-    const dayNumber =
-        dailyDayNumber(
-            currentDateKey()
-        );
-
-    /*
-    Start at today's deterministic position,
-    then move forward through the stable rotation
-    until we find a location not already used today.
-    */
-    for (
-        let offset = 0;
-        offset < ordered.length;
-        offset += 1
-    ) {
-        const selectedIndex =
-            (
+    for (let dayNumber = 0; dayNumber <= targetDayNumber; dayNumber += 1) {
+        const challenge = [];
+        for (let roundIndex = 0; roundIndex < totalRounds; roundIndex += 1) {
+            const protectedIds = new Set(
+                recentChallenges
+                    .map(previous => previous[roundIndex])
+                    .filter(Boolean)
+                    .map(location => location.id)
+            );
+            const ordered = pools[roundIndex];
+            const startIndex = (
                 dayNumber +
-                offset
+                textSeed(`${dailySelectorVersion}-round-${roundIndex + 1}`)
             ) % ordered.length;
 
-        const candidate =
-            ordered[selectedIndex];
+            let selected = null;
 
-        if (
-            !roundLocations.includes(
-                candidate.name
-            )
-        ) {
+            for (let offset = 0; offset < ordered.length; offset += 1) {
+                const candidate = ordered[(startIndex + offset) % ordered.length];
+
+                if (protectedIds.has(candidate.id)) {
+                    continue;
+                }
+
+                if (challenge.some(location => location.id === candidate.id)) {
+                    continue;
+                }
+
+                if (!farEnoughFromChallenge(candidate, challenge)) {
+                    continue;
+                }
+
+                selected = candidate;
+                break;
+            }
+
+            if (!selected) {
+                throw new Error(
+                    `Daily selector ${dailySelectorVersion} could not build ${dateKeyFromDayNumber(dayNumber)} round ${roundIndex + 1}. ` +
+                    `The ${dailyRepeatProtectionDays}-day repeat protection or ${dailyMinimumSeparationKm} km separation rule needs a larger eligible pool.`
+                );
+            }
+
+            challenge.push(selected);
+        }
+
+        recentChallenges.push(challenge);
+
+        while (recentChallenges.length > dailyRepeatProtectionDays) {
+            recentChallenges.shift();
+        }
+
+        if (dayNumber === targetDayNumber) {
+            targetChallenge = challenge;
+        }
+    }
+
+    return targetChallenge;
+}
+
+
+function selectLegacyDailyLocation() {
+    const band = difficultyBandForRound(round);
+    const possible = locations.filter(
+        location =>
+            location.difficulty >= band.min &&
+            location.difficulty <= band.max &&
+            !dailyExcludedLocationIds.includes(location.id)
+    );
+    const ordered = [...possible].sort((first, second) => {
+        const firstSeed = textSeed(`cornwalltap-band-${band.min}-${band.max}-location-${first.id}`);
+        const secondSeed = textSeed(`cornwalltap-band-${band.min}-${band.max}-location-${second.id}`);
+        return firstSeed - secondSeed;
+    });
+    const legacyEpoch = new Date("2026-08-11T00:00:00Z");
+    const today = new Date(`${currentDateKey()}T00:00:00Z`);
+    const dayNumber = Math.floor((today - legacyEpoch) / (24 * 60 * 60 * 1000));
+
+    for (let offset = 0; offset < ordered.length; offset += 1) {
+        const candidate = ordered[(dayNumber + offset) % ordered.length];
+        if (!roundLocations.includes(candidate.name)) {
             current = candidate;
             return;
         }
     }
 
-    throw new Error(
-        `No unused Daily locations available for difficulty ${band.min}-${band.max}.`
-    );
+    throw new Error(`No unused legacy Daily locations available for difficulty ${band.min}-${band.max}.`);
+}
+
+
+function selectDailyLocation() {
+    if (currentDateKey() < dailyEpochKey) {
+        selectLegacyDailyLocation();
+        return;
+    }
+
+    const challenge = generateDailyChallenge(currentDateKey());
+    current = challenge[round - 1];
+
+    if (!current) {
+        throw new Error(
+            `No Daily location generated for round ${round}.`
+        );
+    }
 }
 
 
@@ -1291,26 +1365,9 @@ function selectPracticeLocation() {
 
 
 
-function selectDraftTestLocation() {
-    current =
-        locations[round - 1];
-
-    if (!current) {
-        throw new Error(
-            `No draft test location exists for round ${round}.`
-        );
-    }
-}
-
-
 function selectLocation() {
     if (gameMode === "daily") {
         selectDailyLocation();
-        return;
-    }
-
-    if (gameMode === "draft_test") {
-        selectDraftTestLocation();
         return;
     }
 
@@ -1461,11 +1518,6 @@ function trackEvent(eventType, details = {}) {
 function startMode(selectedMode) {
     gameMode = selectedMode;
 
-    totalRounds =
-        gameMode === "draft_test"
-            ? locations.length
-            : standardTotalRounds;
-
     resetGameState();
 
     analyticsPlayerId =
@@ -1482,17 +1534,10 @@ trackEvent("game_started");
 modeLabelElement.textContent =
         gameMode === "daily"
             ? "Today's Challenge"
-            : gameMode === "draft_test"
-                ? "Draft Location Test"
-                : "Practice Mode";
+            : "Practice Mode";
 
     challengeDateElement.textContent =
         displayDate();
-
-    if (roundTotalElement) {
-        roundTotalElement.textContent =
-            totalRounds;
-    }
 
     showGameScreen();
     startRound();
@@ -1526,9 +1571,7 @@ function startRound() {
 
     roundElement.textContent = round;
     roundStageElement.textContent =
-        gameMode === "draft_test"
-            ? `Draft ${round} of ${totalRounds}`
-            : roundStage(round).name;
+        roundStage(round).name;
     scoreElement.textContent = score;
 
     updateProgress();
@@ -1691,7 +1734,6 @@ trackEvent(
         round_number: round,
         location_name: current.name,
         location_category: current.category,
-        location_difficulty: current.difficulty,
         round_score: points,
         distance_km: Number(km.toFixed(3))
     }
@@ -1707,11 +1749,7 @@ scoreElement.textContent =
             <div class="result-card">
 
                 <div class="round-result-stage">
-                    ${
-                        gameMode === "draft_test"
-                            ? `Draft ${round} of ${totalRounds}`
-                            : roundStage(round).name
-                    }
+                    ${roundStage(round).name}
                 </div>
 
                 <div class="result-category">
@@ -1741,7 +1779,7 @@ scoreElement.textContent =
                 </div>
 
                 ${
-                    (developerMode || gameMode === "draft_test")
+                    developerMode
                         ? `
                             <div class="diagnostic-note">
                                 Zero-score distance:
@@ -1759,7 +1797,7 @@ scoreElement.textContent =
                 </div>
 
                 ${
-                    (developerMode || gameMode === "draft_test")
+                    developerMode
                         ? `
                             <div class="developer-data">
                                 Target:
@@ -1782,11 +1820,7 @@ scoreElement.textContent =
 
         nextButton.textContent =
             round === totalRounds
-                ? (
-                    gameMode === "draft_test"
-                        ? "Finish draft test"
-                        : "See final result"
-                )
+                ? "See final result"
                 : "Continue";
 
         setTimeout(
@@ -2225,25 +2259,6 @@ nextButton.addEventListener(
             return;
         }
 
-        if (
-            gameMode === "draft_test" &&
-            round === totalRounds
-        ) {
-            showToast(
-                `All ${totalRounds} draft locations tested`
-            );
-
-            totalRounds = standardTotalRounds;
-
-            if (roundTotalElement) {
-                roundTotalElement.textContent =
-                    totalRounds;
-            }
-
-            showStartScreen();
-            return;
-        }
-
         if (round === totalRounds) {
             showFinalResult();
             return;
@@ -2277,20 +2292,6 @@ practiceStartButton.addEventListener(
         startMode("practice");
     }
 );
-
-
-if (draftTestButton) {
-    draftTestButton.addEventListener(
-        "click",
-        function () {
-            if (!draftTestAvailable) {
-                return;
-            }
-
-            startMode("draft_test");
-        }
-    );
-}
 
 
 statsButton.addEventListener(
