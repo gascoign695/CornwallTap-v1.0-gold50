@@ -1215,7 +1215,7 @@ function farEnoughFromChallenge(candidate, challenge) {
 }
 
 
-function generateDailyChallenge(dateKey) {
+function generateV3DailyChallenge(dateKey) {
     const targetDayNumber = dailyDayNumber(dateKey);
 
     if (targetDayNumber < 0) {
@@ -1289,6 +1289,174 @@ function generateDailyChallenge(dateKey) {
 }
 
 
+const dailyV4SelectorVersion = "v4";
+const dailyV4EpochKey = "2026-08-26";
+const dailyR45RepeatProtectionDays = 12;
+
+
+function dailyV4DayNumber(dateKey) {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+    const epoch = new Date(`${dailyV4EpochKey}T00:00:00Z`);
+
+    return Math.floor(
+        (date - epoch) /
+        (24 * 60 * 60 * 1000)
+    );
+}
+
+
+function dailyV4LocationOrder(possible, band) {
+    return [...possible].sort(
+        (first, second) => {
+            const firstSeed = textSeed(
+                `cornwalltap-${dailyV4SelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
+            );
+            const secondSeed = textSeed(
+                `cornwalltap-${dailyV4SelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
+            );
+
+            return firstSeed - secondSeed || first.id - second.id;
+        }
+    );
+}
+
+
+function dailyV4Pools() {
+    return difficultyBands.map(band => {
+        const possible = locations.filter(
+            location =>
+                location.difficulty >= band.min &&
+                location.difficulty <= band.max &&
+                !dailyExcludedLocationIds.includes(location.id)
+        );
+
+        if (possible.length === 0) {
+            throw new Error(
+                `No locations available for difficulty ${band.min}-${band.max}.`
+            );
+        }
+
+        return dailyV4LocationOrder(possible, band);
+    });
+}
+
+
+function v3HistoryBeforeV4() {
+    const history = [];
+    const v3LastDate = new Date("2026-08-25T00:00:00Z");
+    const v3Epoch = new Date(`${dailyEpochKey}T00:00:00Z`);
+    const days = Math.floor(
+        (v3LastDate - v3Epoch) /
+        (24 * 60 * 60 * 1000)
+    );
+
+    for (let dayNumber = 0; dayNumber <= days; dayNumber += 1) {
+        history.push(
+            generateV3DailyChallenge(
+                dateKeyFromDayNumber(dayNumber)
+            )
+        );
+    }
+
+    return history;
+}
+
+
+function generateV4DailyChallenge(dateKey) {
+    const targetDayNumber = dailyV4DayNumber(dateKey);
+
+    if (targetDayNumber < 0) {
+        throw new Error(
+            `Daily selector ${dailyV4SelectorVersion} only supports dates from ${dailyV4EpochKey}.`
+        );
+    }
+
+    const pools = dailyV4Pools();
+
+    // Seed v4 with the actual v3 challenges from 14-25 August.
+    // We deliberately do not reconstruct anything before the v3 epoch.
+    const recentChallenges = v3HistoryBeforeV4();
+    let targetChallenge = null;
+
+    for (let dayNumber = 0; dayNumber <= targetDayNumber; dayNumber += 1) {
+        const challenge = [];
+
+        for (let roundIndex = 0; roundIndex < totalRounds; roundIndex += 1) {
+            const relevantHistory = roundIndex >= 3
+                ? recentChallenges.slice(-dailyR45RepeatProtectionDays)
+                : recentChallenges.slice(-dailyRepeatProtectionDays);
+
+            // Rounds 4 and 5 share overlapping difficulty pools, so a location
+            // used in either position is protected from BOTH positions.
+            const protectedIds = new Set(
+                roundIndex >= 3
+                    ? relevantHistory
+                        .flatMap(previous => [previous[3], previous[4]])
+                        .filter(Boolean)
+                        .map(location => location.id)
+                    : relevantHistory
+                        .map(previous => previous[roundIndex])
+                        .filter(Boolean)
+                        .map(location => location.id)
+            );
+
+            const ordered = pools[roundIndex];
+            const startIndex = (
+                dayNumber +
+                textSeed(`${dailyV4SelectorVersion}-round-${roundIndex + 1}`)
+            ) % ordered.length;
+
+            let selected = null;
+
+            for (let offset = 0; offset < ordered.length; offset += 1) {
+                const candidate = ordered[(startIndex + offset) % ordered.length];
+
+                if (protectedIds.has(candidate.id)) {
+                    continue;
+                }
+
+                if (challenge.some(location => location.id === candidate.id)) {
+                    continue;
+                }
+
+                if (!farEnoughFromChallenge(candidate, challenge)) {
+                    continue;
+                }
+
+                selected = candidate;
+                break;
+            }
+
+            if (!selected) {
+                const protection = roundIndex >= 3
+                    ? `${dailyR45RepeatProtectionDays}-day R4/R5 cross-round repeat protection`
+                    : `${dailyRepeatProtectionDays}-day same-round repeat protection`;
+
+                throw new Error(
+                    `Daily selector ${dailyV4SelectorVersion} could not build ${dateKey} round ${roundIndex + 1}. ` +
+                    `The ${protection} or ${dailyMinimumSeparationKm} km separation rule needs a larger eligible pool.`
+                );
+            }
+
+            challenge.push(selected);
+        }
+
+        recentChallenges.push(challenge);
+
+        // Rounds 1-3 still use the longer 19-day protection window.
+        while (recentChallenges.length > dailyRepeatProtectionDays) {
+            recentChallenges.shift();
+        }
+
+        if (dayNumber === targetDayNumber) {
+            targetChallenge = challenge;
+        }
+    }
+
+    return targetChallenge;
+}
+
+
 function selectLegacyDailyLocation() {
     const band = difficultyBandForRound(round);
     const possible = locations.filter(
@@ -1324,7 +1492,9 @@ function selectDailyLocation() {
         return;
     }
 
-    const challenge = generateDailyChallenge(currentDateKey());
+    const challenge = currentDateKey() < dailyV4EpochKey
+        ? generateV3DailyChallenge(currentDateKey())
+        : generateV4DailyChallenge(currentDateKey());
     current = challenge[round - 1];
 
     if (!current) {
