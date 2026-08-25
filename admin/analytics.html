@@ -23,6 +23,7 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 .bar-track{height:10px;background:#e3f1f3;border-radius:999px;overflow:hidden}.bar-fill{height:100%;background:#0788a8;border-radius:999px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 16px;color:#58717a;font-size:13px}
 .status{margin-top:24px;font-size:13px;color:#71858b}.error{color:#a52626}.empty{color:#71858b;padding:8px 0}
+.retention-table{margin-top:16px}
 @media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
 @media(max-width:480px){main{margin-top:24px}.stats{grid-template-columns:1fr}.wide{grid-column:span 1}.card,.panel{padding:18px}.table-wrap{overflow-x:auto}}
 </style>
@@ -44,6 +45,25 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 <section class="section">
 <div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Daily Challenge players, starts and completions by challenge date.</p></div>
 <div class="panel"><div id="activity" class="bars"></div></div>
+</section>
+
+<section class="section">
+<div class="section-head"><h2 class="section-title">Daily retention</h2><p class="muted">Daily Challenge only. New/returning players use Daily starts; milestones use completed Daily Challenges on distinct dates.</p></div>
+<div class="stats retention-stats">
+<div class="card"><div class="label">New players today</div><div class="value" id="newPlayers">—</div></div>
+<div class="card"><div class="label">Returning players today</div><div class="value" id="returningPlayers">—</div></div>
+<div class="card"><div class="label">Return rate today</div><div class="value" id="returnRate">—</div></div>
+<div class="card"><div class="label">2+ Daily completions</div><div class="value" id="players2Plus">—</div></div>
+<div class="card"><div class="label">3+ Daily completions</div><div class="value" id="players3Plus">—</div></div>
+<div class="card"><div class="label">5+ Daily completions</div><div class="value" id="players5Plus">—</div></div>
+<div class="card"><div class="label">7+ Daily completions</div><div class="value" id="players7Plus">—</div></div>
+</div>
+<div class="panel table-wrap retention-table">
+<table>
+<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Return %</th></tr></thead>
+<tbody id="retentionActivity"></tbody>
+</table>
+</div>
 </section>
 
 <section class="section grid-2">
@@ -162,6 +182,26 @@ document.querySelectorAll("th.sortable").forEach(header=>{
   renderLocations();
  });
 });
+function renderRetention(retention){
+ const today=retention?.today||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
+ const unique=Number(today.unique_players)||0;
+ const returning=Number(today.returning_players)||0;
+ const rate=unique?Math.round((returning/unique)*1000)/10:0;
+ document.getElementById("newPlayers").textContent=Number(today.new_players)||0;
+ document.getElementById("returningPlayers").textContent=returning;
+ document.getElementById("returnRate").textContent=`${rate}%`;
+ document.getElementById("players2Plus").textContent=Number(milestones.players_2_plus)||0;
+ document.getElementById("players3Plus").textContent=Number(milestones.players_3_plus)||0;
+ document.getElementById("players5Plus").textContent=Number(milestones.players_5_plus)||0;
+ document.getElementById("players7Plus").textContent=Number(milestones.players_7_plus)||0;
+ const el=document.getElementById("retentionActivity");
+ el.innerHTML=rows.length?rows.map(r=>{
+  const players=Number(r.unique_players)||0,newPlayers=Number(r.new_players)||0,returningPlayers=Number(r.returning_players)||0;
+  const returnRate=players?Math.round((returningPlayers/players)*1000)/10:0;
+  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returnRate}%</td></tr>`;
+ }).join(""):'<tr><td colspan="5" class="empty">No retention activity yet.</td></tr>';
+}
+
 async function loadAnalytics(){
  const status=document.getElementById("status");
  try{
@@ -180,7 +220,7 @@ async function loadAnalytics(){
   document.getElementById("shareRate").textContent=`${s.share_rate??0}%`;
   document.getElementById("shares").textContent=s.shares??0;
   document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed Daily game${Number(s.games_completed)===1?"":"s"}.`;
-  renderActivity(data.activity||[]);renderModes(data.modes||[]);setLocationRows(data.locations||[]);
+  renderActivity(data.activity||[]);renderModes(data.modes||[]);renderRetention(data.retention||{});setLocationRows(data.locations||[]);
   status.textContent="Live data from CornwallTap analytics.";
  }catch(error){
   console.error(error);status.textContent="Unable to load analytics.";status.classList.add("error");

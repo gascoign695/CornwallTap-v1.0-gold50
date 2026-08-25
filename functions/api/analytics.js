@@ -76,6 +76,85 @@ export async function onRequestGet(context) {
             ORDER BY game_mode
         `).bind(today).all();
 
+        const retentionToday = await context.env.DB.prepare(`
+            WITH daily_starts AS (
+                SELECT
+                    player_id,
+                    MIN(challenge_date) AS first_daily_date
+                FROM game_events
+                WHERE event_type = 'game_started'
+                  AND game_mode = 'daily'
+                  AND player_id IS NOT NULL
+                GROUP BY player_id
+            ),
+            today_players AS (
+                SELECT DISTINCT player_id
+                FROM game_events
+                WHERE event_type = 'game_started'
+                  AND game_mode = 'daily'
+                  AND challenge_date = ?
+                  AND player_id IS NOT NULL
+            )
+            SELECT
+                COUNT(*) AS unique_players,
+                SUM(CASE WHEN d.first_daily_date = ? THEN 1 ELSE 0 END) AS new_players,
+                SUM(CASE WHEN d.first_daily_date < ? THEN 1 ELSE 0 END) AS returning_players
+            FROM today_players t
+            JOIN daily_starts d ON d.player_id = t.player_id
+        `).bind(today, today, today).first();
+
+        const retentionMilestones = await context.env.DB.prepare(`
+            WITH player_daily_completions AS (
+                SELECT
+                    player_id,
+                    COUNT(DISTINCT challenge_date) AS completed_days
+                FROM game_events
+                WHERE event_type = 'game_completed'
+                  AND game_mode = 'daily'
+                  AND player_id IS NOT NULL
+                GROUP BY player_id
+            )
+            SELECT
+                SUM(CASE WHEN completed_days >= 2 THEN 1 ELSE 0 END) AS players_2_plus,
+                SUM(CASE WHEN completed_days >= 3 THEN 1 ELSE 0 END) AS players_3_plus,
+                SUM(CASE WHEN completed_days >= 5 THEN 1 ELSE 0 END) AS players_5_plus,
+                SUM(CASE WHEN completed_days >= 7 THEN 1 ELSE 0 END) AS players_7_plus
+            FROM player_daily_completions
+        `).first();
+
+        const retentionActivity = await context.env.DB.prepare(`
+            WITH daily_starts AS (
+                SELECT
+                    player_id,
+                    MIN(challenge_date) AS first_daily_date
+                FROM game_events
+                WHERE event_type = 'game_started'
+                  AND game_mode = 'daily'
+                  AND player_id IS NOT NULL
+                GROUP BY player_id
+            ),
+            recent_players AS (
+                SELECT DISTINCT
+                    challenge_date,
+                    player_id
+                FROM game_events
+                WHERE event_type = 'game_started'
+                  AND game_mode = 'daily'
+                  AND challenge_date >= date(?, '-6 days')
+                  AND challenge_date <= ?
+                  AND player_id IS NOT NULL
+            )
+            SELECT
+                r.challenge_date AS date,
+                COUNT(*) AS unique_players,
+                SUM(CASE WHEN d.first_daily_date = r.challenge_date THEN 1 ELSE 0 END) AS new_players,
+                SUM(CASE WHEN d.first_daily_date < r.challenge_date THEN 1 ELSE 0 END) AS returning_players
+            FROM recent_players r
+            JOIN daily_starts d ON d.player_id = r.player_id
+            GROUP BY r.challenge_date
+            ORDER BY r.challenge_date
+        `).bind(today, today).all();
+
         const locations = await context.env.DB.prepare(`
             SELECT
                 location_name,
@@ -97,6 +176,11 @@ export async function onRequestGet(context) {
             summary,
             activity: activity.results || [],
             modes: modes.results || [],
+            retention: {
+                today: retentionToday || {},
+                milestones: retentionMilestones || {},
+                activity: retentionActivity.results || []
+            },
             locations: locations.results || []
         });
 
