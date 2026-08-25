@@ -1153,3 +1153,73 @@ header .brand-wordmark {
         bottom: 12px;
     }
 }
+
+
+/* Stage B: end-of-game journey review */
+.journey-details {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.journey-distance {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.journey-review-button {
+    padding: 7px 10px;
+    border: 1px solid #9fc7cf;
+    border-radius: 8px;
+    background: white;
+    color: var(--deep-sea);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#viewAllRoundsButton {
+    background: #087da4;
+}
+
+@media (min-width: 651px) {
+    .journey-item {
+        grid-template-columns: 28px minmax(0, 1fr) auto auto;
+    }
+}
+
+@media (max-width: 650px) {
+    .journey-item {
+        grid-template-columns: 26px minmax(0, 1fr) auto auto;
+        gap: 6px;
+        padding: 7px 8px;
+    }
+
+    .journey-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    .journey-score {
+        font-size: 12px;
+    }
+
+    .journey-review-button {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 390px) {
+    .journey-item {
+        grid-template-columns: 24px minmax(0, 1fr) auto;
+    }
+
+    .journey-review-button {
+        grid-column: 2 / 4;
+        width: 100%;
+    }
+}

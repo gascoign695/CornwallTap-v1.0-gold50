@@ -181,7 +181,11 @@ let gameFinished = false;
 let roundScores = [];
 let roundDistances = [];
 let roundLocations = [];
+let roundReviews = [];
 let practiceUsedIds = [];
+
+let finalReviewData = [];
+let finalReviewMode = false;
 
 let analyticsSessionId = null;
 let analyticsGameStartedAt = null;
@@ -278,6 +282,12 @@ const playAgainButton =
 
 const returnButton =
     document.getElementById("returnButton");
+
+const viewAllRoundsButton =
+    document.getElementById("viewAllRoundsButton");
+
+const backToSummaryButton =
+    document.getElementById("backToSummaryButton");
 
 const toastElement =
     document.getElementById("toast");
@@ -1085,7 +1095,9 @@ function saveDailyResult() {
         squares:
             roundScores.map(scoreSquare).join(""),
         roundScores: [...roundScores],
+        roundDistances: [...roundDistances],
         locations: [...roundLocations],
+        roundReviews: roundReviews.map(review => ({ ...review })),
         completedAt:
             new Date().toISOString()
     };
@@ -1570,6 +1582,9 @@ function resetGameState() {
     roundScores = [];
     roundDistances = [];
     roundLocations = [];
+    roundReviews = [];
+    finalReviewData = [];
+    finalReviewMode = false;
     practiceUsedIds = [];
 
     scoreElement.textContent = score;
@@ -1591,7 +1606,10 @@ function showGameScreen() {
 
 function showStartScreen() {
     hideResultModal();
-    clearMapReveal();
+    clearFinalReviewMap();
+    finalReviewMode = false;
+    viewAllRoundsButton.classList.add("hidden");
+    backToSummaryButton.classList.add("hidden");
 
     gameScreen.classList.add("hidden");
     statsScreen.classList.add("hidden");
@@ -1727,6 +1745,8 @@ function startRound() {
     guessed = false;
 
     finalActions.classList.add("hidden");
+    viewAllRoundsButton.classList.add("hidden");
+    backToSummaryButton.classList.add("hidden");
     reviewMapButton.classList.add("hidden");
     showResultButton.classList.add("hidden");
     nextButton.classList.remove("hidden");
@@ -1905,6 +1925,17 @@ map.on(
 
         roundScores.push(points);
 roundDistances.push(km);
+roundReviews.push({
+    roundNumber: round,
+    locationName: current.name,
+    category: current.category,
+    score: points,
+    distanceKm: km,
+    guessLat: event.latlng.lat,
+    guessLon: event.latlng.lng,
+    answerLat: current.lat,
+    answerLon: current.lon
+});
 
 trackEvent(
     "round_completed",
@@ -2047,46 +2078,46 @@ function worstRound() {
 
 function journeyHtml(
     locationsList,
-    scoresList
+    scoresList,
+    distancesList = [],
+    reviewAvailable = false
 ) {
-    if (
-        !Array.isArray(locationsList) ||
-        locationsList.length === 0
-    ) {
+    if (!Array.isArray(locationsList) || locationsList.length === 0) {
         return "";
     }
 
-    const items =
-        locationsList
-            .map(
-                (locationName, index) => `
-                    <li class="journey-item">
-                        <span class="journey-number">
-                            ${index + 1}
-                        </span>
+    const items = locationsList.map((locationName, index) => `
+        <li class="journey-item">
+            <span class="journey-number">${index + 1}</span>
 
-                        <span class="journey-name">
-                            ${locationName}
-                        </span>
+            <span class="journey-details">
+                <span class="journey-name">${locationName}</span>
+                ${
+                    Number.isFinite(distancesList?.[index])
+                        ? `<span class="journey-distance">${displayDistance(distancesList[index])} away</span>`
+                        : ""
+                }
+            </span>
 
-                        <span class="journey-score">
-                            ${scoresList?.[index] ?? "–"}/100
-                        </span>
-                    </li>
-                `
-            )
-            .join("");
+            <span class="journey-score">
+                ${scoresList?.[index] ?? "–"}/100
+            </span>
+
+            ${
+                reviewAvailable
+                    ? `<button type="button" class="journey-review-button" data-review-round="${index}">Review</button>`
+                    : ""
+            }
+        </li>
+    `).join("");
 
     return `
         <div class="journey">
             <h3>Today's Cornwall Journey</h3>
-            <ol class="journey-list">
-                ${items}
-            </ol>
+            <ol class="journey-list">${items}</ol>
         </div>
     `;
 }
-
 
 function finalResultHtml({
     finalScore,
@@ -2094,6 +2125,8 @@ function finalResultHtml({
     squares,
     locationsList = [],
     scoresList = [],
+    distancesList = [],
+    reviewAvailable = false,
     saved = false
 }) {
     const celebration =
@@ -2144,7 +2177,9 @@ function finalResultHtml({
 
             ${journeyHtml(
                 locationsList,
-                scoresList
+                scoresList,
+                distancesList,
+                reviewAvailable
             )}
 
             ${
@@ -2204,6 +2239,145 @@ function finalResultHtml({
 }
 
 
+function normaliseReviewData(reviews) {
+    if (!Array.isArray(reviews)) {
+        return [];
+    }
+
+    return reviews.filter(review =>
+        Number.isFinite(review?.guessLat) &&
+        Number.isFinite(review?.guessLon) &&
+        Number.isFinite(review?.answerLat) &&
+        Number.isFinite(review?.answerLon)
+    );
+}
+
+
+function setFinalReviewData(reviews) {
+    finalReviewData = normaliseReviewData(reviews);
+    viewAllRoundsButton.classList.toggle(
+        "hidden",
+        finalReviewData.length === 0
+    );
+}
+
+
+function clearFinalReviewMap() {
+    clearMapReveal();
+
+    map.eachLayer(layer => {
+        if (layer._cornwallTapFinalReview) {
+            map.removeLayer(layer);
+        }
+    });
+}
+
+
+function markAsFinalReview(layer) {
+    layer._cornwallTapFinalReview = true;
+    return layer;
+}
+
+
+function showFinalReview(roundIndex = null) {
+    if (!finalReviewData.length) {
+        return;
+    }
+
+    hideResultModal();
+    clearFinalReviewMap();
+    finalReviewMode = true;
+
+    const reviews =
+        roundIndex === null
+            ? finalReviewData
+            : [finalReviewData[roundIndex]].filter(Boolean);
+
+    if (reviews.length === 0) {
+        showFinalSummary();
+        return;
+    }
+
+    const bounds = [];
+
+    reviews.forEach(review => {
+        const guessLatLng =
+            L.latLng(review.guessLat, review.guessLon);
+
+        const answerLatLng =
+            L.latLng(review.answerLat, review.answerLon);
+
+        const guess = markAsFinalReview(
+            createGuessMarker(guessLatLng)
+        );
+
+        const answer = markAsFinalReview(
+            createAnswerMarker(answerLatLng)
+        );
+
+        markAsFinalReview(
+            L.polyline(
+                [guessLatLng, answerLatLng],
+                {
+                    weight: 3,
+                    dashArray: "8, 8"
+                }
+            ).addTo(map)
+        );
+
+        guess.bindTooltip(
+            `R${review.roundNumber}: your guess`,
+            { direction: "top" }
+        );
+
+        answer.bindTooltip(
+            `R${review.roundNumber}: ${review.locationName}`,
+            { direction: "top" }
+        );
+
+        bounds.push(guessLatLng, answerLatLng);
+    });
+
+    backToSummaryButton.classList.remove("hidden");
+
+    window.setTimeout(
+        () => {
+            map.invalidateSize();
+            map.fitBounds(
+                L.latLngBounds(bounds),
+                {
+                    padding: [45, 45],
+                    maxZoom: roundIndex === null ? 11 : 14
+                }
+            );
+        },
+        50
+    );
+}
+
+
+function showFinalSummary() {
+    clearFinalReviewMap();
+    finalReviewMode = false;
+    backToSummaryButton.classList.add("hidden");
+    showResultModal();
+}
+
+
+function bindJourneyReviewButtons() {
+    resultElement
+        .querySelectorAll("[data-review-round]")
+        .forEach(button => {
+            button.addEventListener(
+                "click",
+                () => showFinalReview(
+                    Number(button.dataset.reviewRound)
+                )
+            );
+        });
+}
+
+
 function showFinalResult() {
     gameFinished = true;
 
@@ -2240,14 +2414,20 @@ trackEvent(
     }
 );
 
+setFinalReviewData(roundReviews);
+
 resultElement.innerHTML =
         finalResultHtml({
             finalScore: score,
             resultTitle: titleForScore(score),
             squares: resultSquares,
             locationsList: roundLocations,
-            scoresList: roundScores
+            scoresList: roundScores,
+            distancesList: roundDistances,
+            reviewAvailable: finalReviewData.length > 0
         });
+
+    bindJourneyReviewButtons();
 
     reviewMapButton.classList.add("hidden");
     showResultButton.classList.add("hidden");
@@ -2305,6 +2485,8 @@ function viewSavedDailyResult() {
     scoreElement.textContent = saved.score;
     progressFill.style.width = "100%";
 
+    setFinalReviewData(saved.roundReviews || []);
+
     resultElement.innerHTML =
         finalResultHtml({
             finalScore: saved.score,
@@ -2312,8 +2494,12 @@ function viewSavedDailyResult() {
             squares: saved.squares,
             locationsList: saved.locations || [],
             scoresList: saved.roundScores || [],
+            distancesList: saved.roundDistances || [],
+            reviewAvailable: finalReviewData.length > 0,
             saved: true
         });
+
+    bindJourneyReviewButtons();
 
     reviewMapButton.classList.add("hidden");
     showResultButton.classList.add("hidden");
@@ -2559,6 +2745,20 @@ playAgainButton.addEventListener(
 returnButton.addEventListener(
     "click",
     showStartScreen
+);
+
+
+viewAllRoundsButton.addEventListener(
+    "click",
+    function () {
+        showFinalReview();
+    }
+);
+
+
+backToSummaryButton.addEventListener(
+    "click",
+    showFinalSummary
 );
 
 

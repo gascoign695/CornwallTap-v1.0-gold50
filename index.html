@@ -56,7 +56,7 @@
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
-    <link rel="stylesheet" href="css/style.css?v=4.1">
+    <link rel="stylesheet" href="css/style.css?v=4.2">
 </head>
 
 <body>
@@ -230,6 +230,10 @@
 
         <div id="finalActions" class="final-actions hidden">
 
+            <button id="viewAllRoundsButton" class="secondary-action hidden">
+                View all 5 on map
+            </button>
+
             <button id="shareButton">
                 Share Score
             </button>
@@ -261,6 +265,10 @@
     Show result
 </button>
 
+<button id="backToSummaryButton" class="show-result-button hidden">
+    Back to summary
+</button>
+
 <div id="toast" class="toast" aria-live="polite"></div>
 
 
@@ -269,7 +277,7 @@
 ></script>
 
 <script src="js/locations.js?v=4.0"></script>
-<script src="js/game.js?v=4.1"></script>
+<script src="js/game.js?v=4.2"></script>
 
 </body>
 
