@@ -85,13 +85,11 @@ export async function onRequestGet(context) {
                 ROUND(AVG(distance_km), 2) AS average_distance_km
             FROM game_events
             WHERE event_type = 'round_completed'
-              AND challenge_date >= date(?, '-6 days')
-              AND challenge_date <= ?
               AND player_id IS NOT NULL
               AND location_name IS NOT NULL
             GROUP BY location_name, location_category
             ORDER BY average_score ASC, times_played DESC
-        `).bind(today, today).all();
+        `).all();
 
         return Response.json({
             ok: true,
