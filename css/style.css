@@ -1108,3 +1108,48 @@ header .brand-wordmark {
     }
 
 }
+
+/* Stage A: round result map review */
+.round-result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.round-result-actions #nextButton,
+.round-result-actions #reviewMapButton {
+    width: 100%;
+    margin: 0;
+    padding: 14px;
+    font-size: 17px;
+}
+
+.show-result-button {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    z-index: 5100;
+    transform: translateX(-50%);
+    min-width: 150px;
+    padding: 12px 20px;
+    border: 2px solid white;
+    border-radius: 999px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 650px) {
+    .round-result-actions {
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+    }
+
+    .round-result-actions #nextButton,
+    .round-result-actions #reviewMapButton {
+        padding: 12px 8px;
+        font-size: 15px;
+    }
+
+    .show-result-button {
+        bottom: 12px;
+    }
+}

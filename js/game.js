@@ -261,6 +261,12 @@ const resultModal =
 const nextButton =
     document.getElementById("nextButton");
 
+const reviewMapButton =
+    document.getElementById("reviewMapButton");
+
+const showResultButton =
+    document.getElementById("showResultButton");
+
 const finalActions =
     document.getElementById("finalActions");
 
@@ -1721,6 +1727,8 @@ function startRound() {
     guessed = false;
 
     finalActions.classList.add("hidden");
+    reviewMapButton.classList.add("hidden");
+    showResultButton.classList.add("hidden");
     nextButton.classList.remove("hidden");
 
     nextButton.disabled = true;
@@ -1987,6 +1995,7 @@ scoreElement.textContent =
         `;
 
         nextButton.disabled = false;
+        reviewMapButton.classList.remove("hidden");
 
         nextButton.textContent =
             round === totalRounds
@@ -2240,6 +2249,8 @@ resultElement.innerHTML =
             scoresList: roundScores
         });
 
+    reviewMapButton.classList.add("hidden");
+    showResultButton.classList.add("hidden");
     nextButton.classList.add("hidden");
     finalActions.classList.remove("hidden");
 
@@ -2304,6 +2315,8 @@ function viewSavedDailyResult() {
             saved: true
         });
 
+    reviewMapButton.classList.add("hidden");
+    showResultButton.classList.add("hidden");
     nextButton.classList.add("hidden");
     finalActions.classList.remove("hidden");
 
@@ -2422,6 +2435,37 @@ function showToast(message) {
 }
 
 
+reviewMapButton.addEventListener(
+    "click",
+    function () {
+        if (!guessed || gameFinished) {
+            return;
+        }
+
+        hideResultModal();
+        showResultButton.classList.remove("hidden");
+
+        window.setTimeout(
+            () => map.invalidateSize(),
+            50
+        );
+    }
+);
+
+
+showResultButton.addEventListener(
+    "click",
+    function () {
+        if (!guessed || gameFinished) {
+            return;
+        }
+
+        showResultButton.classList.add("hidden");
+        showResultModal();
+    }
+);
+
+
 nextButton.addEventListener(
     "click",
     function () {
@@ -2525,6 +2569,7 @@ shareButton.addEventListener(
 
 
 function showResultModal() {
+    showResultButton.classList.add("hidden");
     resultModal.classList.add("visible");
 
     resultModal.setAttribute(
