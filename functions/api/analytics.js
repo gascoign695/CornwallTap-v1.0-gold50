@@ -9,8 +9,14 @@ export async function onRequestGet(context) {
 
         const url = new URL(context.request.url);
         const requestedDate = url.searchParams.get("date");
-        const validDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(requestedDate || "") ? requestedDate : today;
-        const reportDate = validDate <= today ? validDate : today;
+        const validRequestedDate =
+            /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || "")
+                ? requestedDate
+                : today;
+        const reportDate =
+            validRequestedDate <= today
+                ? validRequestedDate
+                : today;
 
         const summary = await context.env.DB.prepare(`
             SELECT

@@ -206,15 +206,48 @@ function renderRetention(retention){
  }).join(""):'<tr><td colspan="5" class="empty">No retention activity yet.</td></tr>';
 }
 
-async function loadAnalytics(){
+function shiftIsoDate(dateString,days){
+ const date=new Date(`${dateString}T12:00:00Z`);
+ date.setUTCDate(date.getUTCDate()+days);
+ return date.toISOString().slice(0,10);
+}
+
+let currentReportDate=null;
+let latestReportDate=null;
+
+function updateDateControls(){
+ const input=document.getElementById("analyticsDate");
+ if(!currentReportDate)return;
+ input.value=currentReportDate;
+ if(latestReportDate)input.max=latestReportDate;
+ document.getElementById("nextDay").disabled=!latestReportDate||currentReportDate>=latestReportDate;
+ document.getElementById("todayButton").disabled=!latestReportDate||currentReportDate===latestReportDate;
+ document.getElementById("reportTitle").textContent=currentReportDate===latestReportDate?"Today — Daily Challenge":"Daily Challenge";
+}
+
+async function loadAnalytics(date=null){
  const status=document.getElementById("status");
  try{
-  const response=await fetch("/api/analytics",{cache:"no-store"});
+  const query=date?`?date=${encodeURIComponent(date)}`:"";
+  const response=await fetch(`/api/analytics${query}`,{cache:"no-store"});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const data=await response.json();
   if(!data.ok)throw new Error(data.error||"Analytics request failed");
   const s=data.summary||{};
+  currentReportDate=data.date;
+  if(!latestReportDate){
+   if(date){
+    const latestResponse=await fetch("/api/analytics",{cache:"no-store"});
+    if(latestResponse.ok){
+     const latestData=await latestResponse.json();
+     if(latestData.ok)latestReportDate=latestData.date;
+    }
+   }else{
+    latestReportDate=data.date;
+   }
+  }
   document.getElementById("reportDate").textContent=data.date;
+  updateDateControls();
   document.getElementById("players").textContent=s.unique_players??0;
   document.getElementById("started").textContent=s.games_started??0;
   document.getElementById("completed").textContent=s.games_completed??0;
@@ -230,10 +263,18 @@ async function loadAnalytics(){
   console.error(error);status.textContent="Unable to load analytics.";status.classList.add("error");
  }
 }
-document.getElementById("previousDay").addEventListener("click",()=>{if(currentReportDate)loadAnalytics(shiftIsoDate(currentReportDate,-1));});
-document.getElementById("nextDay").addEventListener("click",()=>{if(currentReportDate&&latestReportDate&&currentReportDate<latestReportDate)loadAnalytics(shiftIsoDate(currentReportDate,1));});
+document.getElementById("previousDay").addEventListener("click",()=>{
+ if(currentReportDate)loadAnalytics(shiftIsoDate(currentReportDate,-1));
+});
+document.getElementById("nextDay").addEventListener("click",()=>{
+ if(currentReportDate&&latestReportDate&&currentReportDate<latestReportDate){
+  loadAnalytics(shiftIsoDate(currentReportDate,1));
+ }
+});
 document.getElementById("todayButton").addEventListener("click",()=>loadAnalytics());
-document.getElementById("analyticsDate").addEventListener("change",event=>{if(event.target.value)loadAnalytics(event.target.value);});
+document.getElementById("analyticsDate").addEventListener("change",event=>{
+ if(event.target.value)loadAnalytics(event.target.value);
+});
 loadAnalytics();
 </script>
 </body>
