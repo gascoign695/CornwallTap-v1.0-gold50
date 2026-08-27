@@ -7,6 +7,11 @@ export async function onRequestGet(context) {
             day: "2-digit"
         }).format(new Date());
 
+        const url = new URL(context.request.url);
+        const requestedDate = url.searchParams.get("date");
+        const validDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(requestedDate || "") ? requestedDate : today;
+        const reportDate = validDate <= today ? validDate : today;
+
         const summary = await context.env.DB.prepare(`
             SELECT
                 COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN player_id END) AS unique_players,
@@ -46,7 +51,7 @@ export async function onRequestGet(context) {
             FROM game_events
             WHERE challenge_date = ?
               AND player_id IS NOT NULL
-        `).bind(today).first();
+        `).bind(reportDate).first();
 
         const activity = await context.env.DB.prepare(`
             SELECT
@@ -61,7 +66,7 @@ export async function onRequestGet(context) {
               AND game_mode = 'daily'
             GROUP BY challenge_date
             ORDER BY challenge_date
-        `).bind(today, today).all();
+        `).bind(reportDate, reportDate).all();
 
         const modes = await context.env.DB.prepare(`
             SELECT
@@ -74,7 +79,7 @@ export async function onRequestGet(context) {
               AND player_id IS NOT NULL
             GROUP BY game_mode
             ORDER BY game_mode
-        `).bind(today).all();
+        `).bind(reportDate).all();
 
         const retentionToday = await context.env.DB.prepare(`
             WITH daily_starts AS (
@@ -101,7 +106,7 @@ export async function onRequestGet(context) {
                 SUM(CASE WHEN d.first_daily_date < ? THEN 1 ELSE 0 END) AS returning_players
             FROM today_players t
             JOIN daily_starts d ON d.player_id = t.player_id
-        `).bind(today, today, today).first();
+        `).bind(reportDate, reportDate, reportDate).first();
 
         const retentionMilestones = await context.env.DB.prepare(`
             WITH player_daily_completions AS (
@@ -112,6 +117,7 @@ export async function onRequestGet(context) {
                 WHERE event_type = 'game_completed'
                   AND game_mode = 'daily'
                   AND player_id IS NOT NULL
+                  AND challenge_date <= ?
                 GROUP BY player_id
             )
             SELECT
@@ -120,7 +126,7 @@ export async function onRequestGet(context) {
                 SUM(CASE WHEN completed_days >= 5 THEN 1 ELSE 0 END) AS players_5_plus,
                 SUM(CASE WHEN completed_days >= 7 THEN 1 ELSE 0 END) AS players_7_plus
             FROM player_daily_completions
-        `).first();
+        `).bind(reportDate).first();
 
         const retentionActivity = await context.env.DB.prepare(`
             WITH daily_starts AS (
@@ -153,7 +159,7 @@ export async function onRequestGet(context) {
             JOIN daily_starts d ON d.player_id = r.player_id
             GROUP BY r.challenge_date
             ORDER BY r.challenge_date
-        `).bind(today, today).all();
+        `).bind(reportDate, reportDate).all();
 
         const locations = await context.env.DB.prepare(`
             SELECT
@@ -172,7 +178,7 @@ export async function onRequestGet(context) {
 
         return Response.json({
             ok: true,
-            date: today,
+            date: reportDate,
             summary,
             activity: activity.results || [],
             modes: modes.results || [],
