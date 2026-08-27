@@ -242,6 +242,12 @@ const resetStatsButton =
 const dailyStatusElement =
     document.getElementById("dailyStatus");
 
+const facebookLink =
+    document.getElementById("facebookLink");
+
+const contactLink =
+    document.getElementById("contactLink");
+
 const backButton =
     document.getElementById("backButton");
 
@@ -2757,6 +2763,26 @@ practiceStartButton.addEventListener(
         startMode("practice");
     }
 );
+
+
+if (facebookLink) {
+    facebookLink.addEventListener(
+        "click",
+        function () {
+            trackEvent("facebook_clicked");
+        }
+    );
+}
+
+
+if (contactLink) {
+    contactLink.addEventListener(
+        "click",
+        function () {
+            trackEvent("contact_clicked");
+        }
+    );
+}
 
 
 if (draftTestButton) {
