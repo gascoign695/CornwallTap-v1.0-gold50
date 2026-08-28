@@ -52,12 +52,11 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 </section>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Daily retention</h2><p class="muted">Daily Challenge only. Player identity is browser-based, so different devices or private browsing can appear as different players.</p></div>
+<div class="section-head"><h2 class="section-title">Daily retention</h2><p class="muted">Daily Challenge only. New/returning players use Daily starts; milestones use completed Daily Challenges on distinct dates.</p></div>
 <div class="stats retention-stats">
-<div class="card"><div class="label">New players</div><div class="value" id="newPlayers">—</div></div>
-<div class="card"><div class="label">Returning players</div><div class="value" id="returningPlayers">—</div></div>
-<div class="card"><div class="label">Returning share</div><div class="value" id="returnRate">—</div></div>
-<div class="card"><div class="label">Previous-day players returning</div><div class="value" id="previousDayReturned">—</div><p class="muted" id="previousDayReturnRate"></p></div>
+<div class="card"><div class="label">New players today</div><div class="value" id="newPlayers">—</div></div>
+<div class="card"><div class="label">Returning players today</div><div class="value" id="returningPlayers">—</div></div>
+<div class="card"><div class="label">Return rate today</div><div class="value" id="returnRate">—</div></div>
 <div class="card"><div class="label">2+ Daily completions</div><div class="value" id="players2Plus">—</div></div>
 <div class="card"><div class="label">3+ Daily completions</div><div class="value" id="players3Plus">—</div></div>
 <div class="card"><div class="label">5+ Daily completions</div><div class="value" id="players5Plus">—</div></div>
@@ -65,7 +64,7 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 </div>
 <div class="panel table-wrap retention-table">
 <table>
-<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Returning share</th><th class="num">Next-day returned</th></tr></thead>
+<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Return %</th></tr></thead>
 <tbody id="retentionActivity"></tbody>
 </table>
 </div>
@@ -73,12 +72,12 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 
 <section class="section grid-2">
 <div>
-<div class="section-head"><h2 class="section-title">Daily vs Practice</h2><p class="muted">Mode usage on the selected date.</p></div>
+<div class="section-head"><h2 class="section-title">Daily vs Practice</h2><p class="muted">Today's mode usage.</p></div>
 <div class="panel table-wrap"><table><thead><tr><th>Mode</th><th class="num">Players</th><th class="num">Started</th><th class="num">Completed</th></tr></thead><tbody id="modes"></tbody></table></div>
 </div>
 <div>
 <div class="section-head"><h2 class="section-title">Sharing</h2><p class="muted">Sharing after completed Daily Challenge games.</p></div>
-<div class="panel"><div class="label">Shares on selected date</div><div class="value" id="shares">—</div><p class="muted" id="shareNote"></p></div>
+<div class="panel"><div class="label">Shares today</div><div class="value" id="shares">—</div><p class="muted" id="shareNote"></p></div>
 </div>
 </section>
 
@@ -188,18 +187,13 @@ document.querySelectorAll("th.sortable").forEach(header=>{
  });
 });
 function renderRetention(retention){
- const today=retention?.today||{},cohort=retention?.previous_day_cohort||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
+ const today=retention?.today||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
  const unique=Number(today.unique_players)||0;
  const returning=Number(today.returning_players)||0;
- const returningShare=unique?Math.round((returning/unique)*1000)/10:0;
- const previousPlayers=Number(cohort.previous_day_players)||0;
- const previousReturned=Number(cohort.previous_day_returned)||0;
- const previousRate=previousPlayers?Math.round((previousReturned/previousPlayers)*1000)/10:0;
+ const rate=unique?Math.round((returning/unique)*1000)/10:0;
  document.getElementById("newPlayers").textContent=Number(today.new_players)||0;
  document.getElementById("returningPlayers").textContent=returning;
- document.getElementById("returnRate").textContent=`${returningShare}%`;
- document.getElementById("previousDayReturned").textContent=previousPlayers?`${previousReturned} / ${previousPlayers}`:"—";
- document.getElementById("previousDayReturnRate").textContent=previousPlayers?`${previousRate}% next-day retention`:"No previous-day cohort.";
+ document.getElementById("returnRate").textContent=`${rate}%`;
  document.getElementById("players2Plus").textContent=Number(milestones.players_2_plus)||0;
  document.getElementById("players3Plus").textContent=Number(milestones.players_3_plus)||0;
  document.getElementById("players5Plus").textContent=Number(milestones.players_5_plus)||0;
@@ -207,13 +201,9 @@ function renderRetention(retention){
  const el=document.getElementById("retentionActivity");
  el.innerHTML=rows.length?rows.map(r=>{
   const players=Number(r.unique_players)||0,newPlayers=Number(r.new_players)||0,returningPlayers=Number(r.returning_players)||0;
-  const returningShare=players?Math.round((returningPlayers/players)*1000)/10:0;
-  const hasNextDay=r.next_day_returned!==null&&r.next_day_returned!==undefined;
-  const nextDayReturned=hasNextDay?(Number(r.next_day_returned)||0):0;
-  const nextDayRate=players?Math.round((nextDayReturned/players)*1000)/10:0;
-  const nextDayText=hasNextDay?`${nextDayReturned} / ${players} (${nextDayRate}%)`:"—";
-  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returningShare}%</td><td class="num">${nextDayText}</td></tr>`;
- }).join(""):'<tr><td colspan="6" class="empty">No retention activity yet.</td></tr>';
+  const returnRate=players?Math.round((returningPlayers/players)*1000)/10:0;
+  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returnRate}%</td></tr>`;
+ }).join(""):'<tr><td colspan="5" class="empty">No retention activity yet.</td></tr>';
 }
 
 function shiftIsoDate(dateString,days){
