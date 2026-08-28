@@ -242,12 +242,6 @@ const resetStatsButton =
 const dailyStatusElement =
     document.getElementById("dailyStatus");
 
-const facebookLink =
-    document.getElementById("facebookLink");
-
-const contactLink =
-    document.getElementById("contactLink");
-
 const backButton =
     document.getElementById("backButton");
 
@@ -1086,6 +1080,105 @@ function dailyStorageKey() {
 }
 
 
+
+
+function dailyAttemptStorageKey() {
+    return `cornwallTapDailyAttempt-${currentDateKey()}`;
+}
+
+
+function getSavedDailyAttempt() {
+    const saved = localStorage.getItem(dailyAttemptStorageKey());
+
+    if (!saved) {
+        return null;
+    }
+
+    try {
+        const attempt = JSON.parse(saved);
+
+        if (attempt.date !== currentDateKey()) {
+            localStorage.removeItem(dailyAttemptStorageKey());
+            return null;
+        }
+
+        return attempt;
+    } catch (error) {
+        console.warn(
+            "Stored Daily Challenge attempt could not be read.",
+            error
+        );
+        return null;
+    }
+}
+
+
+function saveDailyAttempt() {
+    if (gameMode !== "daily" || dailyLockBypass) {
+        return;
+    }
+
+    const attempt = {
+        date: currentDateKey(),
+        score,
+        roundScores: [...roundScores],
+        roundDistances: [...roundDistances],
+        roundLocations: [...roundLocations],
+        roundReviews: roundReviews.map(review => ({ ...review })),
+        sessionId: analyticsSessionId,
+        startedAt: analyticsGameStartedAt
+    };
+
+    localStorage.setItem(
+        dailyAttemptStorageKey(),
+        JSON.stringify(attempt)
+    );
+}
+
+
+function clearDailyAttempt() {
+    localStorage.removeItem(dailyAttemptStorageKey());
+}
+
+
+function resumeDailyAttempt(attempt) {
+    gameMode = "daily";
+    totalRounds = standardTotalRounds;
+    resetGameState();
+
+    score = Number(attempt.score) || 0;
+    roundScores = Array.isArray(attempt.roundScores) ? [...attempt.roundScores] : [];
+    roundDistances = Array.isArray(attempt.roundDistances) ? [...attempt.roundDistances] : [];
+    roundLocations = Array.isArray(attempt.roundLocations) ? [...attempt.roundLocations] : [];
+    roundReviews = Array.isArray(attempt.roundReviews)
+        ? attempt.roundReviews.map(review => ({ ...review }))
+        : [];
+
+    analyticsPlayerId = getAnalyticsPlayerId();
+    analyticsSessionId = attempt.sessionId || createAnalyticsSessionId();
+    analyticsGameStartedAt = Number(attempt.startedAt) || Date.now();
+
+    scoreElement.textContent = score;
+    modeLabelElement.textContent = "Today's Challenge";
+    challengeDateElement.textContent = displayDate();
+
+    if (roundTotalElement) {
+        roundTotalElement.textContent = totalRounds;
+    }
+
+    showGameScreen();
+
+    if (roundScores.length >= totalRounds) {
+        round = totalRounds;
+        showFinalResult();
+        return;
+    }
+
+    round = roundScores.length + 1;
+    startRound();
+}
+
+
 function getSavedDailyResult() {
     const saved =
         localStorage.getItem(
@@ -1138,12 +1231,28 @@ function updateStartScreen() {
     const savedResult =
         getSavedDailyResult();
 
+    const savedAttempt =
+        getSavedDailyAttempt();
+
     if (savedResult && !dailyLockBypass) {
         dailyStartButton.textContent =
             "View Today's Result";
 
         dailyStatusElement.textContent =
             `Completed today: ${savedResult.score}/500 · ${savedResult.title}`;
+    } else if (savedAttempt && !dailyLockBypass) {
+        dailyStartButton.textContent =
+            "Continue Today's Challenge";
+
+        const completedRounds =
+            Array.isArray(savedAttempt.roundScores)
+                ? savedAttempt.roundScores.length
+                : 0;
+
+        dailyStatusElement.textContent =
+            completedRounds > 0
+                ? `Attempt in progress · ${completedRounds} of ${standardTotalRounds} rounds completed.`
+                : "Attempt in progress · continue today's challenge.";
     } else {
         dailyStartButton.textContent =
             "Play Today's Challenge";
@@ -1759,6 +1868,10 @@ analyticsGameStartedAt =
 
 trackEvent("game_started");
 
+if (gameMode === "daily") {
+    saveDailyAttempt();
+}
+
 modeLabelElement.textContent =
         gameMode === "daily"
             ? "Today's Challenge"
@@ -1979,6 +2092,10 @@ roundReviews.push({
     answerLat: current.lat,
     answerLon: current.lon
 });
+
+if (gameMode === "daily") {
+    saveDailyAttempt();
+}
 
 trackEvent(
     "round_completed",
@@ -2456,8 +2573,9 @@ function showFinalResult() {
     recordCompletedGame();
 
     if (gameMode === "daily") {
-    saveDailyResult();
-}
+        saveDailyResult();
+        clearDailyAttempt();
+    }
 
 trackEvent(
     "game_completed",
@@ -2752,6 +2870,14 @@ dailyStartButton.addEventListener(
             return;
         }
 
+        const savedAttempt =
+            getSavedDailyAttempt();
+
+        if (savedAttempt && !dailyLockBypass) {
+            resumeDailyAttempt(savedAttempt);
+            return;
+        }
+
         startMode("daily");
     }
 );
@@ -2763,26 +2889,6 @@ practiceStartButton.addEventListener(
         startMode("practice");
     }
 );
-
-
-if (facebookLink) {
-    facebookLink.addEventListener(
-        "click",
-        function () {
-            trackEvent("facebook_clicked");
-        }
-    );
-}
-
-
-if (contactLink) {
-    contactLink.addEventListener(
-        "click",
-        function () {
-            trackEvent("contact_clicked");
-        }
-    );
-}
 
 
 if (draftTestButton) {
