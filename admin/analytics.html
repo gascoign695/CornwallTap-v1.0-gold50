@@ -63,12 +63,7 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 <div class="card"><div class="label">5+ Daily completions</div><div class="value" id="players5Plus">—</div></div>
 <div class="card"><div class="label">7+ Daily completions</div><div class="value" id="players7Plus">—</div></div>
 </div>
-<div class="panel table-wrap retention-table">
-<table>
-<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Returning share</th></tr></thead>
-<tbody id="retentionActivity"></tbody>
-</table>
-</div>
+
 </section>
 
 <section class="section grid-2">
@@ -187,7 +182,7 @@ document.querySelectorAll("th.sortable").forEach(header=>{
  });
 });
 function renderRetention(retention){
- const today=retention?.today||{},day1=retention?.day1||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
+ const today=retention?.today||{},day1=retention?.day1||{},milestones=retention?.milestones||{};
  const unique=Number(today.unique_players)||0;
  const returning=Number(today.returning_players)||0;
  const rate=unique?Math.round((returning/unique)*1000)/10:0;
@@ -202,12 +197,6 @@ function renderRetention(retention){
  document.getElementById("players3Plus").textContent=Number(milestones.players_3_plus)||0;
  document.getElementById("players5Plus").textContent=Number(milestones.players_5_plus)||0;
  document.getElementById("players7Plus").textContent=Number(milestones.players_7_plus)||0;
- const el=document.getElementById("retentionActivity");
- el.innerHTML=rows.length?rows.map(r=>{
-  const players=Number(r.unique_players)||0,newPlayers=Number(r.new_players)||0,returningPlayers=Number(r.returning_players)||0;
-  const returningShare=players?Math.round((returningPlayers/players)*1000)/10:0;
-  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returningShare}%</td></tr>`;
- }).join(""):'<tr><td colspan="5" class="empty">No retention activity yet.</td></tr>';
 }
 
 function shiftIsoDate(dateString,days){
