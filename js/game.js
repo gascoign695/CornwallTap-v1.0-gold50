@@ -1838,6 +1838,29 @@ function trackEvent(eventType, details = {}) {
 }
 
 function startMode(selectedMode) {
+    /*
+    Defence-in-depth for the Daily Challenge lock.
+    Any code path that tries to start a Daily must first respect an
+    existing completed result or in-progress attempt. The Daily button
+    already performs these checks, but keeping the guard here prevents
+    another caller from accidentally creating a second Daily session.
+    */
+    if (selectedMode === "daily" && !dailyLockBypass) {
+        const savedResult = getSavedDailyResult();
+
+        if (savedResult) {
+            viewSavedDailyResult();
+            return;
+        }
+
+        const savedAttempt = getSavedDailyAttempt();
+
+        if (savedAttempt) {
+            resumeDailyAttempt(savedAttempt);
+            return;
+        }
+    }
+
     const localDraftBatch =
         draftTestAvailable &&
         selectedMode === "practice" &&
