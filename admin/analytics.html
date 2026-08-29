@@ -39,24 +39,25 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 <div class="stats">
 <div class="card"><div class="label">Unique Daily players</div><div class="value" id="players">—</div></div>
 <div class="card"><div class="label">Daily games started</div><div class="value" id="started">—</div></div>
-<div class="card"><div class="label">Daily games completed</div><div class="value" id="completed">—</div></div>
+<div class="card"><div class="label">Players completing all 5</div><div class="value" id="completed">—</div></div>
 <div class="card"><div class="label">Daily completion rate</div><div class="value" id="completionRate">—</div></div>
 <div class="card wide"><div class="label">Average Daily score</div><div class="value" id="averageScore">—</div></div>
-<div class="card"><div class="label">Average Daily game time</div><div class="value" id="averageTime">—</div></div>
+<div class="card"><div class="label">Typical Daily game time (median)</div><div class="value" id="averageTime">—</div></div>
 <div class="card"><div class="label">Daily share rate</div><div class="value" id="shareRate">—</div></div>
 </div>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Daily Challenge players, starts and completions by challenge date.</p></div>
+<div class="section-head"><h2 class="section-title">Last 7 days</h2><p class="muted">Daily Challenge audience by challenge date: total, new and returning players.</p></div>
 <div class="panel"><div id="activity" class="bars"></div></div>
 </section>
 
 <section class="section">
-<div class="section-head"><h2 class="section-title">Daily retention</h2><p class="muted">Daily Challenge only. New/returning players use Daily starts; milestones use completed Daily Challenges on distinct dates.</p></div>
+<div class="section-head"><h2 class="section-title">Daily retention</h2><p class="muted">Daily Challenge only. New/returning players use Daily starts. Day-1 retention shows how many of the previous day's players returned on the selected date.</p></div>
 <div class="stats retention-stats">
-<div class="card"><div class="label">New players today</div><div class="value" id="newPlayers">—</div></div>
-<div class="card"><div class="label">Returning players today</div><div class="value" id="returningPlayers">—</div></div>
-<div class="card"><div class="label">Return rate today</div><div class="value" id="returnRate">—</div></div>
+<div class="card"><div class="label">New players</div><div class="value" id="newPlayers">—</div></div>
+<div class="card"><div class="label">Returning players</div><div class="value" id="returningPlayers">—</div></div>
+<div class="card"><div class="label">Returning share</div><div class="value" id="returningShare">—</div></div>
+<div class="card"><div class="label">Day-1 retention</div><div class="value" id="day1Retention">—</div><p class="muted" id="day1Note"></p></div>
 <div class="card"><div class="label">2+ Daily completions</div><div class="value" id="players2Plus">—</div></div>
 <div class="card"><div class="label">3+ Daily completions</div><div class="value" id="players3Plus">—</div></div>
 <div class="card"><div class="label">5+ Daily completions</div><div class="value" id="players5Plus">—</div></div>
@@ -64,7 +65,7 @@ th{font-size:13px;color:#58717a}td{font-size:14px}.num{text-align:right}.sortabl
 </div>
 <div class="panel table-wrap retention-table">
 <table>
-<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Return %</th></tr></thead>
+<thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Returning share</th></tr></thead>
 <tbody id="retentionActivity"></tbody>
 </table>
 </div>
@@ -108,12 +109,11 @@ function escapeHtml(value){
 function renderActivity(rows){
  const el=document.getElementById("activity");
  if(!rows.length){el.innerHTML='<div class="empty">No 7-day activity yet.</div>';return;}
- const max=Math.max(1,...rows.map(r=>Number(r.games_started)||0));
- el.innerHTML=rows.map(r=>{
-  const started=Number(r.games_started)||0,completed=Number(r.games_completed)||0,players=Number(r.unique_players)||0;
-  const width=Math.max(2,(started/max)*100);
-  return `<div class="bar-row"><strong>${escapeHtml(r.date.slice(5))}</strong><div class="bar-track" title="${started} starts, ${completed} completions"><div class="bar-fill" style="width:${width}%"></div></div><span>${players}</span></div>`;
- }).join("")+'<div class="legend"><span>Bar = games started</span><span>Number = unique players</span></div>';
+ el.innerHTML='<div class="table-wrap"><table><thead><tr><th>Date</th><th class="num">Players</th><th class="num">New</th><th class="num">Returning</th><th class="num">Returning share</th></tr></thead><tbody>'+rows.map(r=>{
+  const players=Number(r.unique_players)||0,newPlayers=Number(r.new_players)||0,returningPlayers=Number(r.returning_players)||0;
+  const share=players?Math.round((returningPlayers/players)*1000)/10:0;
+  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${share}%</td></tr>`;
+ }).join("")+'</tbody></table></div>';
 }
 function renderModes(rows){
  const el=document.getElementById("modes");
@@ -187,13 +187,17 @@ document.querySelectorAll("th.sortable").forEach(header=>{
  });
 });
 function renderRetention(retention){
- const today=retention?.today||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
+ const today=retention?.today||{},day1=retention?.day1||{},milestones=retention?.milestones||{},rows=retention?.activity||[];
  const unique=Number(today.unique_players)||0;
  const returning=Number(today.returning_players)||0;
  const rate=unique?Math.round((returning/unique)*1000)/10:0;
  document.getElementById("newPlayers").textContent=Number(today.new_players)||0;
  document.getElementById("returningPlayers").textContent=returning;
- document.getElementById("returnRate").textContent=`${rate}%`;
+ document.getElementById("returningShare").textContent=`${rate}%`;
+ const day1Rate=day1.day_1_retention===null||day1.day_1_retention===undefined?null:Number(day1.day_1_retention);
+ document.getElementById("day1Retention").textContent=day1Rate===null?"—":`${day1Rate}%`;
+ const cohort=Number(day1.cohort_players)||0,returned=Number(day1.returned_next_day)||0;
+ document.getElementById("day1Note").textContent=cohort?`${returned} of ${cohort} previous-day players returned.`:"No previous-day cohort available.";
  document.getElementById("players2Plus").textContent=Number(milestones.players_2_plus)||0;
  document.getElementById("players3Plus").textContent=Number(milestones.players_3_plus)||0;
  document.getElementById("players5Plus").textContent=Number(milestones.players_5_plus)||0;
@@ -201,8 +205,8 @@ function renderRetention(retention){
  const el=document.getElementById("retentionActivity");
  el.innerHTML=rows.length?rows.map(r=>{
   const players=Number(r.unique_players)||0,newPlayers=Number(r.new_players)||0,returningPlayers=Number(r.returning_players)||0;
-  const returnRate=players?Math.round((returningPlayers/players)*1000)/10:0;
-  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returnRate}%</td></tr>`;
+  const returningShare=players?Math.round((returningPlayers/players)*1000)/10:0;
+  return `<tr><td>${escapeHtml(r.date)}</td><td class="num">${players}</td><td class="num">${newPlayers}</td><td class="num">${returningPlayers}</td><td class="num">${returningShare}%</td></tr>`;
  }).join(""):'<tr><td colspan="5" class="empty">No retention activity yet.</td></tr>';
 }
 
@@ -253,7 +257,7 @@ async function loadAnalytics(date=null){
   document.getElementById("completed").textContent=s.games_completed??0;
   document.getElementById("completionRate").textContent=`${s.completion_rate??0}%`;
   document.getElementById("averageScore").textContent=s.average_daily_score!==null?`${s.average_daily_score} / 500`:"—";
-  document.getElementById("averageTime").textContent=formatDuration(s.average_duration_seconds);
+  document.getElementById("averageTime").textContent=formatDuration(s.median_duration_seconds);
   document.getElementById("shareRate").textContent=`${s.share_rate??0}%`;
   document.getElementById("shares").textContent=s.shares??0;
   document.getElementById("shareNote").textContent=`${s.shares??0} share${Number(s.shares)===1?"":"s"} from ${s.games_completed??0} completed Daily game${Number(s.games_completed)===1?"":"s"}.`;
