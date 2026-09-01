@@ -345,7 +345,7 @@ const map = L.map("map", {
 
 
 L.tileLayer(
-    "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/GoogleMapsCompatible/MapServer/tile/9181/{z}/{y}/{x}",
+    "https://wayback.maptiles.arcgis.com/arcgis/rest/services/world_imagery/wmts/1.0.0/googlemapscompatible/mapserver/tile/32645/{z}/{y}/{x}",
     {
         attribution: "Satellite imagery © Esri",
         maxZoom: 18
