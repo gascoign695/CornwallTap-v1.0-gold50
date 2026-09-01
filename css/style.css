@@ -1262,3 +1262,30 @@ header .brand-wordmark {
     }
 }
 
+
+/* Home screen Daily streak */
+.home-streak {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    margin: 2px auto 3px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #fff4c2;
+    color: #594900;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.home-streak:empty {
+    display: none;
+}
+
+@media (max-width: 650px) {
+    .home-streak {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}

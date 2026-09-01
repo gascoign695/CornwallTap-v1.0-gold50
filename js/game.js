@@ -242,6 +242,9 @@ const resetStatsButton =
 const dailyStatusElement =
     document.getElementById("dailyStatus");
 
+const homeStreakElement =
+    document.getElementById("homeStreak");
+
 const backButton =
     document.getElementById("backButton");
 
@@ -1224,9 +1227,44 @@ function saveDailyResult() {
 }
 
 
+function updateHomeStreak() {
+    if (!homeStreakElement) {
+        return;
+    }
+
+    const statistics = getStatistics();
+    const today = currentDateKey();
+    const lastDailyDate = statistics.lastDailyDate;
+
+    if (!lastDailyDate || statistics.currentStreak <= 0) {
+        homeStreakElement.textContent = "🔥 Start your Daily streak today";
+        return;
+    }
+
+    const gap = daysBetweenDateKeys(lastDailyDate, today);
+
+    if (gap === 0) {
+        homeStreakElement.textContent =
+            `🔥 ${statistics.currentStreak} day streak · Kept alive!`;
+        return;
+    }
+
+    if (gap === 1) {
+        const nextStreak = statistics.currentStreak + 1;
+        homeStreakElement.textContent =
+            `🔥 ${statistics.currentStreak} day streak · Play today to make it ${nextStreak}`;
+        return;
+    }
+
+    homeStreakElement.textContent = "🔥 Start a new Daily streak today";
+}
+
+
 function updateStartScreen() {
     startDateElement.textContent =
         displayDate();
+
+    updateHomeStreak();
 
     const savedResult =
         getSavedDailyResult();
@@ -2161,6 +2199,13 @@ trackEvent(
     }
 );
 
+if (
+    gameMode === "daily" &&
+    round === totalRounds
+) {
+    recordCompletedGame();
+}
+
 scoreElement.textContent =
             score;
 
@@ -2623,7 +2668,9 @@ function showFinalResult() {
 
     setFinalReviewData(roundReviews);
 
-    recordCompletedGame();
+    if (gameMode !== "daily") {
+        recordCompletedGame();
+    }
 
     if (gameMode === "daily") {
         saveDailyResult();
