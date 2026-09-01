@@ -961,6 +961,18 @@ function averageStoredDistance(statistics) {
 }
 
 
+
+function averageStoredRoundScore(statistics) {
+    if (statistics.dailyRoundsRecorded === 0) {
+        return 0;
+    }
+
+    return Math.round(
+        statistics.dailyTotalRoundScore /
+        statistics.dailyRoundsRecorded
+    );
+}
+
 function statisticsCard(
     icon,
     value,
@@ -991,71 +1003,98 @@ function renderStatistics() {
     const statistics =
         getStatistics();
 
-    statsOverview.innerHTML = [
-        statisticsCard(
-            "🔥",
-            statistics.currentStreak,
-            "Current daily streak",
-            true
-        ),
-        statisticsCard(
-            "🏆",
-            `${statistics.bestScore}/500`,
-            "Best Daily score",
-            true
-        ),
-        statisticsCard(
-            "📅",
-            statistics.dailyCompleted,
-            "Daily games completed"
-        ),
-        statisticsCard(
-            "🗺️",
-            statistics.dailyCompleted * totalRounds,
-            "Daily rounds played"
-        ),
-        statisticsCard(
-            "🎯",
-            statistics.practiceCompleted,
-            "Practice games"
-        ),
-        statisticsCard(
-            "📈",
-            `${averageStoredScore(
-                statistics
-            )}/500`,
-            "Average Daily score"
-        ),
-        statisticsCard(
-            "⭐",
-            statistics.perfectRounds,
-            "Perfect Daily rounds"
-        ),
-        statisticsCard(
-            "📍",
-            displayDistance(
-                averageStoredDistance(
+    const today = currentDateKey();
+    const lastDailyDate = statistics.lastDailyDate;
+
+    let displayedCurrentStreak = 0;
+
+    if (lastDailyDate && statistics.currentStreak > 0) {
+        const gap = daysBetweenDateKeys(
+            lastDailyDate,
+            today
+        );
+
+        if (gap === 0 || gap === 1) {
+            displayedCurrentStreak =
+                statistics.currentStreak;
+        }
+    }
+
+    const streakUnit =
+        displayedCurrentStreak === 1
+            ? "day"
+            : "days";
+
+    const longestUnit =
+        statistics.longestStreak === 1
+            ? "day"
+            : "days";
+
+    statsOverview.innerHTML = `
+        <section class="stats-streak-hero">
+            <div class="stats-streak-icon">🔥</div>
+            <div class="stats-streak-copy">
+                <div class="stats-streak-label">Current Daily streak</div>
+                <div class="stats-streak-value">
+                    ${displayedCurrentStreak} ${streakUnit}
+                </div>
+                <div class="stats-streak-best">
+                    Longest streak: ${statistics.longestStreak} ${longestUnit}
+                </div>
+            </div>
+        </section>
+
+        <div class="stats-headline-grid">
+            ${statisticsCard(
+                "🏆",
+                `${statistics.bestScore}/500`,
+                "Best Daily score",
+                true
+            )}
+            ${statisticsCard(
+                "📈",
+                `${averageStoredScore(
                     statistics
-                )
-            ),
-            "Average Daily guess distance"
-        ),
-        statisticsCard(
-            "🌟",
-            statistics.longestStreak,
-            "Longest daily streak"
-        ),
-        statisticsCard(
-            "💚",
-            statistics.dailyRounds75Plus,
-            "Daily rounds scoring 75+"
-        ),
-        statisticsCard(
-            "🧭",
-            statistics.dailyZeroRounds,
-            "Zero-score Daily rounds"
-        )
-    ].join("");
+                )}/500`,
+                "Average Daily score",
+                true
+            )}
+        </div>
+
+        <div class="stats-section-heading">
+            Your Daily stats
+        </div>
+
+        <div class="stats-detail-grid">
+            ${statisticsCard(
+                "📅",
+                statistics.dailyCompleted,
+                "Dailies completed"
+            )}
+            ${statisticsCard(
+                "⭐",
+                statistics.perfectRounds,
+                "Perfect Daily rounds"
+            )}
+            ${statisticsCard(
+                "🎯",
+                `${averageStoredRoundScore(
+                    statistics
+                )}/100`,
+                "Average round score"
+            )}
+            ${statisticsCard(
+                "💚",
+                statistics.dailyRounds75Plus,
+                "Daily rounds scoring 75+"
+            )}
+            ${statisticsCard(
+                "🎮",
+                statistics.practiceCompleted,
+                "Practice games"
+            )}
+        </div>
+    `;
 }
 
 
