@@ -1451,3 +1451,170 @@ header .brand-wordmark {
         margin-top: 18px;
     }
 }
+
+
+/* Statistics v2 - personal Daily score history */
+.stats-history-card {
+    margin-top: 14px;
+    padding: 15px 16px 12px;
+    border: 1px solid #d7e9ec;
+    border-radius: 14px;
+    background: #f8fbfc;
+    text-align: left;
+}
+
+.stats-history-heading-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.stats-history-title {
+    color: var(--deep-sea);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.stats-history-subtitle {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.stats-history-latest {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.stats-history-latest span {
+    display: block;
+    color: var(--ocean);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.stats-history-latest small {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.stats-history-chart-wrap {
+    width: 100%;
+    overflow: hidden;
+}
+
+.stats-history-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+}
+
+.stats-history-grid-line {
+    stroke: #dce9eb;
+    stroke-width: 1;
+}
+
+.stats-history-axis-label,
+.stats-history-date-label {
+    fill: #75898f;
+    font-family: "Poppins", Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.stats-history-line {
+    fill: none;
+    stroke: #087da4;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.stats-history-point {
+    fill: #087da4;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.stats-history-point.latest {
+    fill: #d99b16;
+    stroke-width: 2.5;
+}
+
+.stats-history-average-line {
+    stroke: #d99b16;
+    stroke-width: 1.5;
+    stroke-dasharray: 6 5;
+}
+
+.stats-history-average-label {
+    fill: #8a6816;
+    font-family: "Poppins", Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.stats-history-empty-copy,
+.stats-history-first-score {
+    min-height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef7f8;
+    color: #536d74;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.stats-history-first-score {
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+}
+
+.stats-history-first-dot {
+    width: 12px;
+    height: 12px;
+    border: 3px solid white;
+    border-radius: 50%;
+    background: #d99b16;
+    box-shadow: 0 0 0 1px #d99b16;
+}
+
+.stats-history-first-score strong {
+    color: var(--deep-sea);
+    font-size: 22px;
+}
+
+.stats-history-first-score span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+@media (max-width: 650px) {
+    .stats-history-card {
+        padding: 13px 10px 10px;
+    }
+
+    .stats-history-title {
+        font-size: 14px;
+    }
+
+    .stats-history-latest span {
+        font-size: 18px;
+    }
+
+    .stats-history-chart {
+        min-height: 205px;
+    }
+}

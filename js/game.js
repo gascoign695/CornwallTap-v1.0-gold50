@@ -772,6 +772,7 @@ function defaultStatistics() {
         dailyZeroRounds: 0,
         dailyTotalRoundScore: 0,
         dailyRoundsRecorded: 0,
+        dailyHistory: [],
         lastDailyDate: null
     };
 }
@@ -932,6 +933,18 @@ function recordCompletedGame() {
     statistics.dailyRoundsRecorded +=
         roundScores.length;
 
+    const history = Array.isArray(statistics.dailyHistory)
+        ? statistics.dailyHistory
+        : [];
+
+    history.push({
+        date: currentDateKey(),
+        score
+    });
+
+    statistics.dailyHistory =
+        history.slice(-90);
+
     updateDailyStreak(statistics);
     saveStatistics(statistics);
 }
@@ -999,6 +1012,189 @@ function statisticsCard(
 }
 
 
+function formatHistoryDate(dateKey) {
+    const parsed = new Date(`${dateKey}T12:00:00Z`);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return dateKey;
+    }
+
+    return new Intl.DateTimeFormat(
+        "en-GB",
+        {
+            day: "numeric",
+            month: "short",
+            timeZone: "Europe/London"
+        }
+    ).format(parsed);
+}
+
+
+function scoreHistoryHtml(statistics) {
+    const history = Array.isArray(statistics.dailyHistory)
+        ? statistics.dailyHistory
+            .filter(
+                entry =>
+                    entry &&
+                    /^\d{4}-\d{2}-\d{2}$/.test(entry.date || "") &&
+                    Number.isFinite(Number(entry.score))
+            )
+            .slice(-30)
+        : [];
+
+    if (history.length === 0) {
+        return `
+            <section class="stats-history-card stats-history-empty">
+                <div class="stats-history-heading-row">
+                    <div>
+                        <div class="stats-history-title">📈 Your score history</div>
+                        <div class="stats-history-subtitle">Last 30 Dailies</div>
+                    </div>
+                </div>
+
+                <div class="stats-history-empty-copy">
+                    Your score history starts here. Complete a Daily Challenge to begin your graph.
+                </div>
+            </section>
+        `;
+    }
+
+    const scores = history.map(entry => Number(entry.score));
+    const latest = history[history.length - 1];
+    const historyAverage = Math.round(
+        scores.reduce((total, value) => total + value, 0) /
+        scores.length
+    );
+
+    if (history.length === 1) {
+        return `
+            <section class="stats-history-card stats-history-one">
+                <div class="stats-history-heading-row">
+                    <div>
+                        <div class="stats-history-title">📈 Your score history</div>
+                        <div class="stats-history-subtitle">Last 30 Dailies</div>
+                    </div>
+                    <div class="stats-history-latest">
+                        <span>${latest.score}/500</span>
+                        <small>${formatHistoryDate(latest.date)}</small>
+                    </div>
+                </div>
+
+                <div class="stats-history-first-score">
+                    <div class="stats-history-first-dot"></div>
+                    <strong>${latest.score}/500</strong>
+                    <span>First score recorded — your graph will build as you play.</span>
+                </div>
+            </section>
+        `;
+    }
+
+    const width = 640;
+    const height = 280;
+    const left = 42;
+    const right = 16;
+    const top = 18;
+    const bottom = 34;
+    const plotWidth = width - left - right;
+    const plotHeight = height - top - bottom;
+
+    const xForIndex = index =>
+        left +
+        (history.length === 1
+            ? plotWidth / 2
+            : (index / (history.length - 1)) * plotWidth);
+
+    const yForScore = value =>
+        top +
+        ((500 - Math.max(0, Math.min(500, value))) / 500) *
+        plotHeight;
+
+    const pointPairs = history.map((entry, index) => ({
+        ...entry,
+        score: Number(entry.score),
+        x: xForIndex(index),
+        y: yForScore(Number(entry.score))
+    }));
+
+    const polylinePoints = pointPairs
+        .map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`)
+        .join(" ");
+
+    const gridLines = [0, 100, 200, 300, 400, 500]
+        .map(value => {
+            const y = yForScore(value);
+            return `
+                <line class="stats-history-grid-line" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"></line>
+                <text class="stats-history-axis-label" x="${left - 8}" y="${y + 4}" text-anchor="end">${value}</text>
+            `;
+        })
+        .join("");
+
+    const averageY = yForScore(historyAverage);
+
+    const circles = pointPairs
+        .map((point, index) => `
+            <circle
+                class="stats-history-point ${index === pointPairs.length - 1 ? "latest" : ""}"
+                cx="${point.x.toFixed(1)}"
+                cy="${point.y.toFixed(1)}"
+                r="${index === pointPairs.length - 1 ? 5 : 3.5}"
+            >
+                <title>${formatHistoryDate(point.date)}: ${point.score}/500</title>
+            </circle>
+        `)
+        .join("");
+
+    const first = history[0];
+
+    return `
+        <section class="stats-history-card">
+            <div class="stats-history-heading-row">
+                <div>
+                    <div class="stats-history-title">📈 Your score history</div>
+                    <div class="stats-history-subtitle">Last 30 Dailies</div>
+                </div>
+                <div class="stats-history-latest">
+                    <span>Avg ${historyAverage}/500</span>
+                    <small>${history.length} ${history.length === 1 ? "Daily" : "Dailies"}</small>
+                </div>
+            </div>
+
+            <div class="stats-history-chart-wrap">
+                <svg
+                    class="stats-history-chart"
+                    viewBox="0 0 ${width} ${height}"
+                    role="img"
+                    aria-label="Daily score history from 0 to 500 points"
+                >
+                    ${gridLines}
+                    <line
+                        class="stats-history-average-line"
+                        x1="${left}"
+                        y1="${averageY.toFixed(1)}"
+                        x2="${width - right}"
+                        y2="${averageY.toFixed(1)}"
+                    ></line>
+                    <text
+                        class="stats-history-average-label"
+                        x="${width - right - 2}"
+                        y="${Math.max(top + 10, averageY - 6).toFixed(1)}"
+                        text-anchor="end"
+                    >Avg ${historyAverage}</text>
+                    <polyline
+                        class="stats-history-line"
+                        points="${polylinePoints}"
+                    ></polyline>
+                    ${circles}
+                    <text class="stats-history-date-label" x="${left}" y="${height - 8}" text-anchor="start">${formatHistoryDate(first.date)}</text>
+                    <text class="stats-history-date-label" x="${width - right}" y="${height - 8}" text-anchor="end">${formatHistoryDate(latest.date)}</text>
+                </svg>
+            </div>
+        </section>
+    `;
+}
+
+
 function renderStatistics() {
     const statistics =
         getStatistics();
@@ -1056,10 +1252,12 @@ function renderStatistics() {
                 `${averageStoredScore(
                     statistics
                 )}/500`,
-                "Average Daily score",
+                "Lifetime Daily average",
                 true
             )}
         </div>
+
+        ${scoreHistoryHtml(statistics)}
 
         <div class="stats-section-heading">
             Your Daily stats
