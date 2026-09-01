@@ -325,7 +325,7 @@ const START_ZOOM = 9;
 
 const CORNWALL_AND_SCILLY_BOUNDS =
     L.latLngBounds(
-        [49.72, -6.75],
+        [49.40, -7.20],
         [51.02, -3.85]
     );
 
