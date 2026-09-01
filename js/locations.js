@@ -2250,5 +2250,755 @@ const locations = [
         region: "East Cornwall",
         parish: "Menheniot",
         verified: true
+    },
+
+    {
+        id: 151,
+        name: "Fistral Beach",
+        category: "Beach",
+        difficulty: 1,
+        scoreProfile: "natural_standard",
+        lat: 50.41645000,
+        lon: -5.10235000,
+        tolerance: 0.800,
+        fact: "Fistral Beach is one of Britain's best-known surfing beaches and hosts major surf competitions.",
+        region: "Mid Cornwall",
+        parish: "Newquay",
+        verified: true
+    },
+
+    {
+        id: 152,
+        name: "Watergate Bay",
+        category: "Bay",
+        difficulty: 2,
+        scoreProfile: "natural_standard",
+        lat: 50.44481300,
+        lon: -5.04479300,
+        tolerance: 1.500,
+        fact: "Watergate Bay is a long Atlantic beach north of Newquay that is popular for surfing and other watersports.",
+        region: "Mid Cornwall",
+        parish: "",
+        verified: true
+    },
+
+    {
+        id: 153,
+        name: "Summerleaze Beach",
+        category: "Beach",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.83093000,
+        lon: -4.55268000,
+        tolerance: 0.900,
+        fact: "Summerleaze Beach lies beside Bude town centre and is home to the semi-natural Bude Sea Pool.",
+        region: "North Cornwall",
+        parish: "Bude-Stratton",
+        verified: true
+    },
+
+    {
+        id: 154,
+        name: "Botallack Mine – The Crowns",
+        category: "Mining Heritage",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.14310000,
+        lon: -5.69320000,
+        tolerance: 0.350,
+        fact: "The Crowns engine houses at Botallack stand dramatically on the cliffs above former mine workings that extended beneath the sea.",
+        region: "West Cornwall",
+        parish: "St Just",
+        verified: true
+    },
+
+    {
+        id: 155,
+        name: "Chapel Porth",
+        category: "Beach",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.30088200,
+        lon: -5.23526300,
+        tolerance: 0.600,
+        fact: "Chapel Porth is a narrow-valley beach on the St Agnes Heritage Coast below the mining landscape around Wheal Coates.",
+        region: "Mid Cornwall",
+        parish: "St Agnes",
+        verified: true
+    },
+
+    {
+        id: 156,
+        name: "Porth Joke (Polly Joke)",
+        category: "Beach",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.40311000,
+        lon: -5.13830000,
+        tolerance: 0.600,
+        fact: "Porth Joke is a sandy cove between Crantock and Holywell Bay and is widely known locally as Polly Joke.",
+        region: "Mid Cornwall",
+        parish: "Cubert",
+        verified: true
+    },
+
+    {
+        id: 157,
+        name: "Port Gaverne",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.59251000,
+        lon: -4.82231000,
+        tolerance: 0.600,
+        fact: "Port Gaverne is a small former fishing settlement in a sheltered cove immediately east of Port Isaac.",
+        region: "North Cornwall",
+        parish: "St Endellion",
+        verified: true
+    },
+
+    {
+        id: 158,
+        name: "Cawsand",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.33130200,
+        lon: -4.20208900,
+        tolerance: 0.600,
+        fact: "Cawsand is one of the twin villages of Cawsand and Kingsand on the Rame Peninsula overlooking Plymouth Sound.",
+        region: "East Cornwall",
+        parish: "Maker-with-Rame",
+        verified: true
+    },
+
+    {
+        id: 159,
+        name: "Portwrinkle",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.36165000,
+        lon: -4.31129000,
+        tolerance: 0.700,
+        fact: "Portwrinkle is a small coastal village at the western end of Whitsand Bay with a historic fishing harbour.",
+        region: "East Cornwall",
+        parish: "Sheviock",
+        verified: true
+    },
+
+    {
+        id: 160,
+        name: "Bryher",
+        category: "Island",
+        difficulty: 5,
+        scoreProfile: "natural_remote",
+        lat: 49.95449000,
+        lon: -6.35572000,
+        tolerance: 1.000,
+        fact: "Bryher is one of the smallest inhabited Isles of Scilly and lies immediately west of Tresco.",
+        region: "Isles of Scilly",
+        parish: "Bryher",
+        verified: true
+    },
+
+    {
+        id: 161,
+        name: "Church Cove, Gunwalloe",
+        category: "Cove",
+        difficulty: 5,
+        scoreProfile: "natural_standard",
+        lat: 50.03806000,
+        lon: -5.26778000,
+        tolerance: 0.600,
+        fact: "Church Cove at Gunwalloe is named for St Winwaloe's Church, which stands immediately beside the beach.",
+        region: "West Cornwall",
+        parish: "Gunwalloe",
+        verified: true
+    },
+
+    {
+        id: 162,
+        name: "Porth Nanven",
+        category: "Cove",
+        difficulty: 8,
+        scoreProfile: "natural_remote",
+        lat: 50.11916600,
+        lon: -5.70071200,
+        tolerance: 0.500,
+        fact: "Porth Nanven lies at the seaward end of the Cot Valley near St Just and is known for its rounded granite boulders.",
+        region: "West Cornwall",
+        parish: "St Just",
+        verified: true
+    },
+
+    {
+        id: 163,
+        name: "Porthgwarra",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.03773700,
+        lon: -5.67237000,
+        tolerance: 0.600,
+        fact: "Porthgwarra is a tiny coastal settlement and former fishing cove between Land’s End and Porthcurno.",
+        region: "West Cornwall",
+        parish: "St Levan",
+        verified: true
+    },
+
+    {
+        id: 164,
+        name: "St Nectan's Glen Waterfall",
+        category: "Natural Feature",
+        difficulty: 7,
+        scoreProfile: "natural_remote",
+        lat: 50.66510400,
+        lon: -4.71693400,
+        tolerance: 0.500,
+        fact: "St Nectan's Glen is a wooded valley near Tintagel containing the waterfall known as St Nectan's Kieve.",
+        region: "North Cornwall",
+        parish: "Tintagel",
+        verified: true
+    },
+
+    {
+        id: 165,
+        name: "Siblyback Lake",
+        category: "Reservoir",
+        difficulty: 4,
+        scoreProfile: "natural_standard",
+        lat: 50.51048800,
+        lon: -4.49198400,
+        tolerance: 1.200,
+        fact: "Siblyback Lake is a reservoir on Bodmin Moor surrounded by a popular walking and cycling route.",
+        region: "East Cornwall",
+        parish: "St Cleer",
+        verified: true
+    },
+
+    {
+        id: 166,
+        name: "Antony House",
+        category: "Historic House",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.38527000,
+        lon: -4.22722000,
+        tolerance: 0.400,
+        fact: "Antony House is an early eighteenth-century country house overlooking the Lynher estuary on the Rame Peninsula.",
+        region: "East Cornwall",
+        parish: "Antony",
+        verified: true
+    },
+
+    {
+        id: 167,
+        name: "St Agnes, Isles of Scilly",
+        category: "Island",
+        difficulty: 6,
+        scoreProfile: "natural_remote",
+        lat: 49.89278000,
+        lon: -6.34155000,
+        tolerance: 1.100,
+        fact: "St Agnes is the southernmost populated island of the Isles of Scilly and is joined to Gugh by a sandbar at low tide.",
+        region: "Isles of Scilly",
+        parish: "St Agnes",
+        verified: true
+    },
+
+    {
+        id: 168,
+        name: "Tregardock Beach",
+        category: "Beach",
+        difficulty: 10,
+        scoreProfile: "natural_remote",
+        lat: 50.62405000,
+        lon: -4.77060000,
+        tolerance: 0.600,
+        fact: "Tregardock is a remote tidal beach on the north Cornwall coast between Tintagel and Port Isaac.",
+        region: "North Cornwall",
+        parish: "St Teath",
+        verified: true
+    },
+
+    {
+        id: 169,
+        name: "Hawker's Hut",
+        category: "Historic Building",
+        difficulty: 9,
+        scoreProfile: "landmark_remote",
+        lat: 50.90699000,
+        lon: -4.56326000,
+        tolerance: 0.250,
+        fact: "Hawker's Hut was built into the cliffs by the poet and clergyman Robert Stephen Hawker using driftwood and shipwreck timber.",
+        region: "North Cornwall",
+        parish: "Morwenstow",
+        verified: true
+    },
+
+    {
+        id: 170,
+        name: "Tregantle Fort",
+        category: "Historic Building",
+        difficulty: 8,
+        scoreProfile: "landmark_remote",
+        lat: 50.35760000,
+        lon: -4.26980000,
+        tolerance: 0.400,
+        fact: "Tregantle Fort is a nineteenth-century Royal Commission fort built to defend the approaches to Plymouth.",
+        region: "East Cornwall",
+        parish: "Antony",
+        verified: true
+    },
+
+    {
+        id: 171,
+        name: "Crowdy Reservoir",
+        category: "Reservoir",
+        difficulty: 7,
+        scoreProfile: "natural_remote",
+        lat: 50.62247600,
+        lon: -4.62187400,
+        tolerance: 1.500,
+        fact: "Crowdy Reservoir lies on the northern edge of Bodmin Moor within an area valued for wildlife and open moorland.",
+        region: "North Cornwall",
+        parish: "",
+        verified: true
+    },
+
+    {
+        id: 172,
+        name: "Samson",
+        category: "Island",
+        difficulty: 8,
+        scoreProfile: "natural_remote",
+        lat: 49.93320000,
+        lon: -6.35290000,
+        tolerance: 0.800,
+        fact: "Samson is the largest uninhabited island of the Isles of Scilly and is formed by two prominent hills joined by a narrow isthmus.",
+        region: "Isles of Scilly",
+        parish: "Tresco",
+        verified: true
+    },
+
+    {
+        id: 173,
+        name: "Nanjizal Beach",
+        category: "Beach",
+        difficulty: 9,
+        scoreProfile: "natural_remote",
+        lat: 50.05361000,
+        lon: -5.69250000,
+        tolerance: 0.500,
+        fact: "Nanjizal is a remote beach on the far west coast of Cornwall between Land’s End and Porthgwarra.",
+        region: "West Cornwall",
+        parish: "St Levan",
+        verified: true
+    },
+
+    {
+        id: 174,
+        name: "Annet",
+        category: "Island",
+        difficulty: 10,
+        scoreProfile: "natural_remote",
+        lat: 49.89551000,
+        lon: -6.37203000,
+        tolerance: 0.700,
+        fact: "Annet is an uninhabited Isles of Scilly island and an important seabird breeding site where landing is restricted.",
+        region: "Isles of Scilly",
+        parish: "St Agnes",
+        verified: true
+    },
+
+    {
+        id: 175,
+        name: "Bude",
+        category: "Town",
+        difficulty: 2,
+        scoreProfile: "settlement_easy",
+        lat: 50.82764000,
+        lon: -4.54664000,
+        tolerance: 1.500,
+        fact: "Bude is a north Cornwall seaside town at the mouth of the River Neet, known for its beaches and canal.",
+        region: "North Cornwall",
+        parish: "Bude-Stratton",
+        verified: true
+    },
+
+    {
+        id: 176,
+        name: "Penryn",
+        category: "Town",
+        difficulty: 3,
+        scoreProfile: "settlement_easy",
+        lat: 50.16850000,
+        lon: -5.10340000,
+        tolerance: 1.400,
+        fact: "Penryn is a historic town on the Penryn River that was an important port before neighbouring Falmouth grew.",
+        region: "Mid Cornwall",
+        parish: "Penryn",
+        verified: true
+    },
+
+    {
+        id: 177,
+        name: "Torpoint",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.37618000,
+        lon: -4.20114000,
+        tolerance: 1.000,
+        fact: "Torpoint stands on the Cornish side of the Hamoaze opposite Devonport and is linked to Plymouth by chain ferries.",
+        region: "East Cornwall",
+        parish: "Torpoint",
+        verified: true
+    },
+
+    {
+        id: 178,
+        name: "St Blazey",
+        category: "Town",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.36141000,
+        lon: -4.71640000,
+        tolerance: 1.000,
+        fact: "St Blazey is a small town near Par in the heart of Cornwall’s historic china-clay district.",
+        region: "Mid Cornwall",
+        parish: "St Blaise",
+        verified: true
+    },
+
+    {
+        id: 179,
+        name: "St Buryan",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.07469300,
+        lon: -5.62263100,
+        tolerance: 0.800,
+        fact: "St Buryan is a West Penwith village dominated by its large medieval parish church and situated west of Penzance.",
+        region: "West Cornwall",
+        parish: "St Buryan, Lamorna and Paul",
+        verified: true
+    },
+
+    {
+        id: 180,
+        name: "Porthtowan",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.28494000,
+        lon: -5.23917000,
+        tolerance: 0.600,
+        fact: "Porthtowan is a north-coast village and surfing beach within Cornwall’s historic mining landscape.",
+        region: "Mid Cornwall",
+        parish: "St Agnes",
+        verified: true
+    },
+
+    {
+        id: 181,
+        name: "Kingsand",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.33330300,
+        lon: -4.20151800,
+        tolerance: 0.700,
+        fact: "Kingsand is one of the twin villages of Kingsand and Cawsand on the Rame Peninsula and was historically in Devon until 1844.",
+        region: "East Cornwall",
+        parish: "Maker-with-Rame",
+        verified: true
+    },
+
+    {
+        id: 182,
+        name: "Minions",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.51446300,
+        lon: -4.45424800,
+        tolerance: 0.800,
+        fact: "Minions is a high moorland village near the Hurlers stone circles and the Cheesewring on Bodmin Moor.",
+        region: "East Cornwall",
+        parish: "Linkinhorne",
+        verified: true
+    },
+
+    {
+        id: 183,
+        name: "Carbis Bay",
+        category: "Village",
+        difficulty: 3,
+        scoreProfile: "settlement_easy",
+        lat: 50.19680000,
+        lon: -5.46460000,
+        tolerance: 0.900,
+        fact: "Carbis Bay is a seaside village immediately southeast of St Ives overlooking the western side of St Ives Bay.",
+        region: "West Cornwall",
+        parish: "St Ives",
+        verified: true
+    },
+
+    {
+        id: 184,
+        name: "Indian Queens",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.39271300,
+        lon: -4.93184700,
+        tolerance: 1.500,
+        fact: "Indian Queens is a village on the A30 west of Goss Moor whose name comes from a former coaching inn.",
+        region: "Mid Cornwall",
+        parish: "St Enoder",
+        verified: true
+    },
+
+    {
+        id: 185,
+        name: "Threemilestone",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.26343000,
+        lon: -5.11462000,
+        tolerance: 0.900,
+        fact: "Threemilestone is a large village approximately three miles west of Truro.",
+        region: "Mid Cornwall",
+        parish: "Kenwyn",
+        verified: true
+    },
+
+    {
+        id: 186,
+        name: "Bugle",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.39620000,
+        lon: -4.79369000,
+        tolerance: 0.800,
+        fact: "Bugle developed in the nineteenth century alongside roads and tramways serving Cornwall’s china-clay industry.",
+        region: "Mid Cornwall",
+        parish: "Treverbyn",
+        verified: true
+    },
+
+    {
+        id: 187,
+        name: "Tywardreath",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.35713000,
+        lon: -4.69249000,
+        tolerance: 0.800,
+        fact: "Tywardreath is a hilltop village near Par that featured in Daphne du Maurier’s novel The House on the Strand.",
+        region: "Mid Cornwall",
+        parish: "Tywardreath and Par",
+        verified: true
+    },
+
+    {
+        id: 188,
+        name: "St Dennis",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.38333000,
+        lon: -4.88333000,
+        tolerance: 0.800,
+        fact: "St Dennis is a hilltop village in the heart of mid-Cornwall’s china-clay country.",
+        region: "Mid Cornwall",
+        parish: "St Dennis",
+        verified: true
+    },
+
+    {
+        id: 189,
+        name: "Stratton",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.82998100,
+        lon: -4.51645700,
+        tolerance: 0.800,
+        fact: "Stratton is a historic settlement just inland from Bude and was once more important than its coastal neighbour.",
+        region: "North Cornwall",
+        parish: "Bude-Stratton",
+        verified: true
+    },
+
+    {
+        id: 190,
+        name: "Carnon Downs",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.22267000,
+        lon: -5.08509000,
+        tolerance: 0.800,
+        fact: "Carnon Downs is a large village on the A39 between Truro and Falmouth.",
+        region: "Mid Cornwall",
+        parish: "Feock",
+        verified: true
+    },
+
+    {
+        id: 191,
+        name: "Devoran",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.21235000,
+        lon: -5.09367000,
+        tolerance: 0.700,
+        fact: "Devoran grew as a port for the mining districts and stands where the Carnon River meets Restronguet Creek.",
+        region: "Mid Cornwall",
+        parish: "Feock",
+        verified: true
+    },
+
+    {
+        id: 192,
+        name: "Roche",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.40722000,
+        lon: -4.83389000,
+        tolerance: 0.900,
+        fact: "Roche is a large mid-Cornwall village close to the dramatic granite outcrop and chapel ruins of Roche Rock.",
+        region: "Mid Cornwall",
+        parish: "Roche",
+        verified: true
+    },
+
+    {
+        id: 193,
+        name: "St Stephen",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.34362000,
+        lon: -4.89187900,
+        tolerance: 1.000,
+        fact: "St Stephen-in-Brannel is a large village west of St Austell on the southern edge of Cornwall’s china-clay district.",
+        region: "Mid Cornwall",
+        parish: "St Stephen-in-Brannel",
+        verified: true
+    },
+
+    {
+        id: 194,
+        name: "Lanner",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.21551800,
+        lon: -5.20161200,
+        tolerance: 0.800,
+        fact: "Lanner is a former mining village southeast of Redruth beneath the slopes of Carn Marth.",
+        region: "West Cornwall",
+        parish: "Lanner",
+        verified: true
+    },
+
+    {
+        id: 195,
+        name: "Truro",
+        category: "Town",
+        difficulty: 1,
+        scoreProfile: "settlement_easy",
+        lat: 50.26326000,
+        lon: -5.05259000,
+        tolerance: 1.500,
+        fact: "Truro is Cornwall’s cathedral city and administrative centre, granted city status in 1877.",
+        region: "Mid Cornwall",
+        parish: "Truro",
+        verified: true
+    },
+
+    {
+        id: 196,
+        name: "Lost Gardens of Heligan",
+        category: "Attraction",
+        difficulty: 4,
+        scoreProfile: "landmark_standard",
+        lat: 50.28439000,
+        lon: -4.80949000,
+        tolerance: 0.900,
+        fact: "The Lost Gardens of Heligan are a restored historic estate garden near Mevagissey that was rediscovered and revived from the 1990s.",
+        region: "Mid Cornwall",
+        parish: "St Ewe",
+        verified: true
+    },
+
+    {
+        id: 197,
+        name: "Trelissick",
+        category: "Historic Estate",
+        difficulty: 6,
+        scoreProfile: "landmark_standard",
+        lat: 50.21606000,
+        lon: -5.03247000,
+        tolerance: 0.500,
+        fact: "Trelissick is a National Trust house and garden overlooking Carrick Roads near the King Harry Ferry.",
+        region: "Mid Cornwall",
+        parish: "Feock",
+        verified: true
+    },
+
+    {
+        id: 198,
+        name: "St Catherine's Castle",
+        category: "Castle",
+        difficulty: 7,
+        scoreProfile: "landmark_remote",
+        lat: 50.32828000,
+        lon: -4.64452000,
+        tolerance: 0.300,
+        fact: "St Catherine's Castle is a small Tudor artillery fort built by Henry VIII to defend the entrance to Fowey Harbour.",
+        region: "Mid Cornwall",
+        parish: "Fowey",
+        verified: true
+    },
+
+    {
+        id: 199,
+        name: "Cremyll",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.35950000,
+        lon: -4.17602000,
+        tolerance: 0.600,
+        fact: "Cremyll is a small riverside settlement beside Mount Edgcumbe and the passenger ferry across Plymouth Sound.",
+        region: "East Cornwall",
+        parish: "Maker-with-Rame",
+        verified: true
+    },
+
+    {
+        id: 200,
+        name: "Caerhays Castle",
+        category: "Castle",
+        difficulty: 7,
+        scoreProfile: "landmark_remote",
+        lat: 50.23984000,
+        lon: -4.84647000,
+        tolerance: 0.400,
+        fact: "Caerhays Castle is a Grade I listed Gothic Revival country house designed by John Nash above Porthluney Cove.",
+        region: "Mid Cornwall",
+        parish: "St Michael Caerhays",
+        verified: true
     }
 ];

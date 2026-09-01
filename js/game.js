@@ -1326,14 +1326,16 @@ function legacyDailyLocationOrder(possible, band) {
 
 
 /*
-Daily selector v4 begins on 26 August 2026.
+Daily selector v5 begins on 2 September 2026.
 
-The real Daily challenges from 14-25 August are frozen below by location ID.
-That historical record must not be rebuilt from the current location pool,
-because locations can later be added, removed or moved between difficulty bands.
+The real Daily challenges from 14 August-1 September are frozen below by
+location ID. That historical record must not be rebuilt from the current
+location pool, because locations can later be added, removed or moved between
+difficulty bands.
 */
-const dailyV4SelectorVersion = "v4";
-const dailyV4EpochKey = "2026-08-26";
+const dailyV5SelectorVersion = "v5";
+const dailyV5EpochKey = "2026-09-02";
+const frozenDailyHistoryStartKey = "2026-08-14";
 const dailyRepeatProtectionDays = 19;
 const dailyR45RepeatProtectionDays = 16;
 const dailyMinimumSeparationKm = 15;
@@ -1350,7 +1352,14 @@ const frozenDailyHistoryIds = [
     [23, 72, 109, 89, 98],
     [24, 75, 113, 90, 99],
     [25, 76, 114, 94, 100],
-    [26, 77, 9, 97, 110]
+    [26, 77, 9, 97, 110],
+    [51, 27, 58, 95, 49],
+    [52, 28, 60, 111, 59],
+    [56, 29, 61, 112, 68],
+    [57, 64, 71, 121, 125],
+    [63, 82, 72, 96, 115],
+    [65, 81, 78, 119, 122],
+    [66, 98, 83, 117, 123]
 ];
 
 
@@ -1376,12 +1385,30 @@ function frozenDailyHistory() {
 }
 
 
-function dailyV4DayNumber(dateKey) {
+function frozenDailyChallenge(dateKey) {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+    const start = new Date(`${frozenDailyHistoryStartKey}T00:00:00Z`);
+    const dayIndex = Math.floor(
+        (date - start) / (24 * 60 * 60 * 1000)
+    );
+
+    if (
+        dayIndex < 0 ||
+        dayIndex >= frozenDailyHistoryIds.length
+    ) {
+        return null;
+    }
+
+    return frozenDailyHistory()[dayIndex];
+}
+
+
+function dailyV5DayNumber(dateKey) {
     const date =
         new Date(`${dateKey}T00:00:00Z`);
 
     const epoch =
-        new Date(`${dailyV4EpochKey}T00:00:00Z`);
+        new Date(`${dailyV5EpochKey}T00:00:00Z`);
 
     return Math.floor(
         (date - epoch) /
@@ -1390,15 +1417,15 @@ function dailyV4DayNumber(dateKey) {
 }
 
 
-function dailyV4LocationOrder(possible, band) {
+function dailyV5LocationOrder(possible, band) {
     return [...possible].sort(
         (first, second) => {
             const firstSeed = textSeed(
-                `cornwalltap-${dailyV4SelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
+                `cornwalltap-${dailyV5SelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
             );
 
             const secondSeed = textSeed(
-                `cornwalltap-${dailyV4SelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
+                `cornwalltap-${dailyV5SelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
             );
 
             return firstSeed - secondSeed || first.id - second.id;
@@ -1407,7 +1434,7 @@ function dailyV4LocationOrder(possible, band) {
 }
 
 
-function dailyV4Pools() {
+function dailyV5Pools() {
     return difficultyBands.map(band => {
         const possible = locations.filter(
             location =>
@@ -1422,7 +1449,7 @@ function dailyV4Pools() {
             );
         }
 
-        return dailyV4LocationOrder(possible, band);
+        return dailyV5LocationOrder(possible, band);
     });
 }
 
@@ -1439,19 +1466,19 @@ function farEnoughFromChallenge(candidate, challenge) {
 }
 
 
-function generateV4DailyChallenge(dateKey) {
+function generateV5DailyChallenge(dateKey) {
     const targetDayNumber =
-        dailyV4DayNumber(dateKey);
+        dailyV5DayNumber(dateKey);
 
     if (targetDayNumber < 0) {
         throw new Error(
-            `Daily selector ${dailyV4SelectorVersion} only supports dates from ${dailyV4EpochKey}.`
+            `Daily selector ${dailyV5SelectorVersion} only supports dates from ${dailyV5EpochKey}.`
         );
     }
 
-    const pools = dailyV4Pools();
+    const pools = dailyV5Pools();
 
-    // Seed v4 with the real challenges served from 14-25 August.
+    // Seed v5 with every real Daily served from 14 August-1 September.
     const recentChallenges = frozenDailyHistory();
     let targetChallenge = null;
 
@@ -1493,7 +1520,7 @@ function generateV4DailyChallenge(dateKey) {
             const startIndex = (
                 dayNumber +
                 textSeed(
-                    `${dailyV4SelectorVersion}-round-${roundIndex + 1}`
+                    `${dailyV5SelectorVersion}-round-${roundIndex + 1}`
                 )
             ) % ordered.length;
 
@@ -1534,7 +1561,7 @@ function generateV4DailyChallenge(dateKey) {
                         : `${dailyRepeatProtectionDays}-day same-round repeat protection`;
 
                 throw new Error(
-                    `Daily selector ${dailyV4SelectorVersion} could not build ${dateKey} round ${roundIndex + 1}. ` +
+                    `Daily selector ${dailyV5SelectorVersion} could not build ${dateKey} round ${roundIndex + 1}. ` +
                     `The ${protection} or ${dailyMinimumSeparationKm} km separation rule needs a larger eligible pool.`
                 );
             }
@@ -1614,17 +1641,20 @@ function selectLegacyDailyLocation() {
 
 
 function selectDailyLocation() {
-    if (currentDateKey() < dailyV4EpochKey) {
+    const dateKey = currentDateKey();
+    const frozenChallenge = frozenDailyChallenge(dateKey);
+
+    if (frozenChallenge) {
+        current = frozenChallenge[round - 1];
+    } else if (dateKey < frozenDailyHistoryStartKey) {
         selectLegacyDailyLocation();
         return;
+    } else {
+        const challenge =
+            generateV5DailyChallenge(dateKey);
+
+        current = challenge[round - 1];
     }
-
-    const challenge =
-        generateV4DailyChallenge(
-            currentDateKey()
-        );
-
-    current = challenge[round - 1];
 
     if (!current) {
         throw new Error(
