@@ -2,7 +2,7 @@ export async function onRequestGet() {
     return Response.json(
         {
             ok: true,
-            build: "20260902-endgame1-1"
+            build: "20260902-miles1"
         },
         {
             headers: {

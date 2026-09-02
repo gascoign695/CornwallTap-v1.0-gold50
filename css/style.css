@@ -1618,3 +1618,59 @@ header .brand-wordmark {
         min-height: 205px;
     }
 }
+
+/* Distance unit preference - miles default, optional kilometres */
+.distance-unit-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e1ebed;
+}
+
+.distance-unit-label {
+    color: var(--deep-sea);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.distance-unit-toggle {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid #c7dde1;
+    border-radius: 10px;
+    background: #eef7f8;
+}
+
+.distance-unit-option {
+    min-width: 82px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: transparent;
+    color: #537078;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.distance-unit-option.selected {
+    background: #087da4;
+    color: white;
+}
+
+@media (max-width: 420px) {
+    .distance-unit-setting {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .distance-unit-toggle {
+        width: 100%;
+    }
+
+    .distance-unit-option {
+        flex: 1 1 50%;
+    }
+}
+

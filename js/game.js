@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260902-endgame1-1";
+const clientBuildVersion = "20260902-miles1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -761,6 +761,25 @@ const statisticsStorageKey =
     "cornwallTapStatistics-v3-profile-pipeline";
 
 
+const distanceUnitStorageKey =
+    "cornwallTapDistanceUnit";
+
+
+function getDistanceUnit() {
+    return localStorage.getItem(distanceUnitStorageKey) === "km"
+        ? "km"
+        : "mi";
+}
+
+
+function setDistanceUnit(unit) {
+    localStorage.setItem(
+        distanceUnitStorageKey,
+        unit === "km" ? "km" : "mi"
+    );
+}
+
+
 function defaultStatistics() {
     return {
         gamesPlayed: 0,
@@ -1297,7 +1316,34 @@ function renderStatistics() {
                 "Practice games"
             )}
         </div>
+
+        <div class="distance-unit-setting" aria-label="Distance units">
+            <span class="distance-unit-label">Distance units</span>
+            <div class="distance-unit-toggle" role="group" aria-label="Choose distance units">
+                <button
+                    type="button"
+                    class="distance-unit-option ${getDistanceUnit() === "mi" ? "selected" : ""}"
+                    data-distance-unit="mi"
+                    aria-pressed="${getDistanceUnit() === "mi"}"
+                >Miles</button>
+                <button
+                    type="button"
+                    class="distance-unit-option ${getDistanceUnit() === "km" ? "selected" : ""}"
+                    data-distance-unit="km"
+                    aria-pressed="${getDistanceUnit() === "km"}"
+                >Kilometres</button>
+            </div>
+        </div>
     `;
+
+    statsOverview
+        .querySelectorAll("[data-distance-unit]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                setDistanceUnit(button.dataset.distanceUnit);
+                renderStatistics();
+            });
+        });
 }
 
 
@@ -2394,11 +2440,16 @@ function createAnswerMarker(latlng) {
 
 
 function displayDistance(km) {
-    if (km < 1) {
-        return `${Math.round(km * 1000)} metres`;
+    if (getDistanceUnit() === "km") {
+        if (km < 1) {
+            return `${Math.round(km * 1000)} metres`;
+        }
+
+        return `${km.toFixed(2)} km`;
     }
 
-    return `${km.toFixed(2)} km`;
+    const miles = km * 0.621371;
+    return `${miles.toFixed(2)} mi`;
 }
 
 
