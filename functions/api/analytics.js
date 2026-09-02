@@ -18,6 +18,10 @@ export async function onRequestGet(context) {
                 ? validRequestedDate
                 : today;
 
+        // Temporary D1 diagnostics. Add ?debug=1 to bypass cache and return
+        // the rows_read metadata for each individual analytics query.
+        const debug = url.searchParams.get("debug") === "1";
+
         /*
         Protect D1 from repeated dashboard refreshes.
         Today's analytics may be up to 2 minutes behind; historical dates
@@ -34,7 +38,7 @@ export async function onRequestGet(context) {
                 ? new Request(url.toString(), { method: "GET" })
                 : null;
 
-        if (cache && cacheKey) {
+        if (!debug && cache && cacheKey) {
             const cachedResponse =
                 await cache.match(cacheKey);
 
@@ -48,7 +52,7 @@ export async function onRequestGet(context) {
         This measures completion of all five guesses rather than whether
         they also click through to the final summary screen.
         */
-        const summary = await context.env.DB.prepare(`
+        const summaryResult = await context.env.DB.prepare(`
             SELECT
                 COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN player_id END) AS unique_players,
                 COUNT(DISTINCT CASE WHEN event_type = 'game_started' AND game_mode = 'daily' THEN session_id END) AS games_started,
@@ -77,13 +81,15 @@ export async function onRequestGet(context) {
             FROM game_events
             WHERE challenge_date = ?
               AND player_id IS NOT NULL
-        `).bind(reportDate).first();
+        `).bind(reportDate).all();
+
+        const summary = summaryResult.results?.[0] || {};
 
         /*
         Median keeps the raw duration data intact but prevents very long
         abandoned/open-tab sessions from dominating the headline metric.
         */
-        const medianDuration = await context.env.DB.prepare(`
+        const medianDurationResult = await context.env.DB.prepare(`
             WITH durations AS (
                 SELECT duration_seconds
                 FROM game_events
@@ -105,7 +111,9 @@ export async function onRequestGet(context) {
                 LIMIT 2 - (SELECT n FROM counted) % 2
                 OFFSET (SELECT (n - 1) / 2 FROM counted)
             )
-        `).bind(reportDate).first();
+        `).bind(reportDate).all();
+
+        const medianDuration = medianDurationResult.results?.[0] || {};
 
         summary.median_duration_seconds =
             medianDuration?.median_duration_seconds ?? null;
@@ -192,7 +200,7 @@ export async function onRequestGet(context) {
         of the unique Daily players who started yesterday, how many
         started a Daily again on the selected date?
         */
-        const dayOneRetention = await context.env.DB.prepare(`
+        const dayOneRetentionResult = await context.env.DB.prepare(`
             WITH previous_day_players AS (
                 SELECT DISTINCT player_id
                 FROM game_events
@@ -220,11 +228,49 @@ export async function onRequestGet(context) {
             FROM previous_day_players p
             LEFT JOIN report_day_players r
               ON r.player_id = p.player_id
-        `).bind(reportDate, reportDate).first();
+        `).bind(reportDate, reportDate).all();
 
-        // TEMP diagnostic: retention milestones query disabled to measure its D1 read cost.
-        const retentionMilestones = {};
+        const dayOneRetention = dayOneRetentionResult.results?.[0] || {};
 
+        const retentionMilestonesResult = await context.env.DB.prepare(`
+            WITH player_daily_completions AS (
+                SELECT
+                    player_id,
+                    COUNT(DISTINCT challenge_date) AS completed_days
+                FROM game_events
+                WHERE event_type = 'round_completed'
+                  AND round_number = 5
+                  AND game_mode = 'daily'
+                  AND player_id IS NOT NULL
+                  AND challenge_date <= ?
+                GROUP BY player_id
+            )
+            SELECT
+                SUM(CASE WHEN completed_days >= 2 THEN 1 ELSE 0 END) AS players_2_plus,
+                SUM(CASE WHEN completed_days >= 3 THEN 1 ELSE 0 END) AS players_3_plus,
+                SUM(CASE WHEN completed_days >= 5 THEN 1 ELSE 0 END) AS players_5_plus,
+                SUM(CASE WHEN completed_days >= 7 THEN 1 ELSE 0 END) AS players_7_plus
+            FROM player_daily_completions
+        `).bind(reportDate).all();
+
+        const retentionMilestones = retentionMilestonesResult.results?.[0] || {};
+
+        const diagnostics = debug ? {
+            rows_read: {
+                summary: summaryResult.meta?.rows_read ?? null,
+                median_duration: medianDurationResult.meta?.rows_read ?? null,
+                activity: activity.meta?.rows_read ?? null,
+                modes: modes.meta?.rows_read ?? null,
+                day_1_retention: dayOneRetentionResult.meta?.rows_read ?? null,
+                retention_milestones: retentionMilestonesResult.meta?.rows_read ?? null
+            }
+        } : undefined;
+
+        if (diagnostics) {
+            diagnostics.rows_read.total = Object.values(diagnostics.rows_read)
+                .filter(value => typeof value === "number")
+                .reduce((sum, value) => sum + value, 0);
+        }
 
         const response = Response.json(
             {
@@ -239,6 +285,7 @@ export async function onRequestGet(context) {
                     milestones: retentionMilestones || {},
                     activity: activityRows
                 },
+                ...(debug ? { diagnostics } : {})
             },
             {
                 headers: {
@@ -247,7 +294,7 @@ export async function onRequestGet(context) {
             }
         );
 
-        if (cache && cacheKey) {
+        if (!debug && cache && cacheKey) {
             context.waitUntil(
                 cache.put(
                     cacheKey,
