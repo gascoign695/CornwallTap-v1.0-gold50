@@ -124,9 +124,9 @@ export async function onRequestGet(context) {
 
         /*
         Build the 7-day audience table once and reuse it for both the
-        dashboard activity table and retention activity. Only players who
-        appeared in the requested 7-day window have their first-ever Daily
-        start looked up, instead of grouping every player on every request.
+        dashboard activity table and retention activity. Each player's first
+        Daily date is stored once in daily_players, so this query never has to
+        search historical game_events to rediscover it.
         */
         const activity = await context.env.DB.prepare(`
             WITH recent_players AS (
@@ -137,34 +137,17 @@ export async function onRequestGet(context) {
                   AND challenge_date >= date(?, '-6 days')
                   AND challenge_date <= ?
                   AND player_id IS NOT NULL
-            ),
-            relevant_players AS (
-                SELECT DISTINCT player_id
-                FROM recent_players
-            ),
-            daily_starts AS (
-                SELECT
-                    r.player_id,
-                    MIN(g.challenge_date) AS first_daily_date
-                FROM relevant_players r
-                CROSS JOIN game_events g INDEXED BY idx_game_events_daily_start_player_date
-                WHERE g.event_type = 'game_started'
-                  AND g.game_mode = 'daily'
-                  AND g.player_id = r.player_id
-                  AND g.player_id IS NOT NULL
-                  AND g.challenge_date <= ?
-                GROUP BY r.player_id
             )
             SELECT
                 r.challenge_date AS date,
                 COUNT(*) AS unique_players,
-                SUM(CASE WHEN d.first_daily_date = r.challenge_date THEN 1 ELSE 0 END) AS new_players,
-                SUM(CASE WHEN d.first_daily_date < r.challenge_date THEN 1 ELSE 0 END) AS returning_players
+                SUM(CASE WHEN p.first_daily_date = r.challenge_date THEN 1 ELSE 0 END) AS new_players,
+                SUM(CASE WHEN p.first_daily_date < r.challenge_date THEN 1 ELSE 0 END) AS returning_players
             FROM recent_players r
-            JOIN daily_starts d ON d.player_id = r.player_id
+            JOIN daily_players p ON p.player_id = r.player_id
             GROUP BY r.challenge_date
             ORDER BY r.challenge_date
-        `).bind(reportDate, reportDate, reportDate).all();
+        `).bind(reportDate, reportDate).all();
 
         const activityRows =
             activity.results || [];

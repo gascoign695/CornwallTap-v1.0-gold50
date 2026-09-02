@@ -72,6 +72,29 @@ export async function onRequestPost(context) {
             )
             .run();
 
+        /*
+        Keep each player's first-ever Daily date in a tiny lookup table.
+        The table is backfilled once from historical game_events; after that,
+        only genuine Daily starts need this cheap INSERT OR IGNORE.
+        */
+        if (
+            event_type === "game_started" &&
+            game_mode === "daily" &&
+            player_id &&
+            challenge_date
+        ) {
+            await context.env.DB
+                .prepare(`
+                    INSERT OR IGNORE INTO daily_players (
+                        player_id,
+                        first_daily_date
+                    )
+                    VALUES (?, ?)
+                `)
+                .bind(player_id, challenge_date)
+                .run();
+        }
+
         return new Response(
             JSON.stringify({
                 ok: true
