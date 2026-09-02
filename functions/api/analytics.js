@@ -19,6 +19,31 @@ export async function onRequestGet(context) {
                 : today;
 
         /*
+        Protect D1 from repeated dashboard refreshes.
+        Today's analytics may be up to 2 minutes behind; historical dates
+        are effectively fixed and can be cached for an hour.
+        */
+        const cache =
+            typeof caches !== "undefined"
+                ? caches.default
+                : null;
+        const cacheSeconds =
+            reportDate === today ? 120 : 3600;
+        const cacheKey =
+            cache
+                ? new Request(url.toString(), { method: "GET" })
+                : null;
+
+        if (cache && cacheKey) {
+            const cachedResponse =
+                await cache.match(cacheKey);
+
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+        }
+
+        /*
         A Daily is considered completed when the player records Round 5.
         This measures completion of all five guesses rather than whether
         they also click through to the final summary screen.
@@ -89,16 +114,14 @@ export async function onRequestGet(context) {
         summary.average_duration_seconds =
             summary.median_duration_seconds;
 
+        /*
+        Build the 7-day audience table once and reuse it for both the
+        dashboard activity table and retention activity. Only players who
+        appeared in the requested 7-day window have their first-ever Daily
+        start looked up, instead of grouping every player on every request.
+        */
         const activity = await context.env.DB.prepare(`
-            WITH daily_starts AS (
-                SELECT player_id, MIN(challenge_date) AS first_daily_date
-                FROM game_events
-                WHERE event_type = 'game_started'
-                  AND game_mode = 'daily'
-                  AND player_id IS NOT NULL
-                GROUP BY player_id
-            ),
-            recent_players AS (
+            WITH recent_players AS (
                 SELECT DISTINCT challenge_date, player_id
                 FROM game_events
                 WHERE event_type = 'game_started'
@@ -106,6 +129,23 @@ export async function onRequestGet(context) {
                   AND challenge_date >= date(?, '-6 days')
                   AND challenge_date <= ?
                   AND player_id IS NOT NULL
+            ),
+            relevant_players AS (
+                SELECT DISTINCT player_id
+                FROM recent_players
+            ),
+            daily_starts AS (
+                SELECT
+                    g.player_id,
+                    MIN(g.challenge_date) AS first_daily_date
+                FROM game_events g
+                JOIN relevant_players r
+                  ON r.player_id = g.player_id
+                WHERE g.event_type = 'game_started'
+                  AND g.game_mode = 'daily'
+                  AND g.player_id IS NOT NULL
+                  AND g.challenge_date <= ?
+                GROUP BY g.player_id
             )
             SELECT
                 r.challenge_date AS date,
@@ -116,7 +156,23 @@ export async function onRequestGet(context) {
             JOIN daily_starts d ON d.player_id = r.player_id
             GROUP BY r.challenge_date
             ORDER BY r.challenge_date
-        `).bind(reportDate, reportDate).all();
+        `).bind(reportDate, reportDate, reportDate).all();
+
+        const activityRows =
+            activity.results || [];
+
+        /*
+        retentionToday used to run another all-history first-start query.
+        It is exactly the selected-date row already calculated above.
+        */
+        const retentionToday =
+            activityRows.find(
+                row => row.date === reportDate
+            ) || {
+                unique_players: 0,
+                new_players: 0,
+                returning_players: 0
+            };
 
         const modes = await context.env.DB.prepare(`
             SELECT
@@ -130,33 +186,6 @@ export async function onRequestGet(context) {
             GROUP BY game_mode
             ORDER BY game_mode
         `).bind(reportDate).all();
-
-        const retentionToday = await context.env.DB.prepare(`
-            WITH daily_starts AS (
-                SELECT
-                    player_id,
-                    MIN(challenge_date) AS first_daily_date
-                FROM game_events
-                WHERE event_type = 'game_started'
-                  AND game_mode = 'daily'
-                  AND player_id IS NOT NULL
-                GROUP BY player_id
-            ),
-            today_players AS (
-                SELECT DISTINCT player_id
-                FROM game_events
-                WHERE event_type = 'game_started'
-                  AND game_mode = 'daily'
-                  AND challenge_date = ?
-                  AND player_id IS NOT NULL
-            )
-            SELECT
-                COUNT(*) AS unique_players,
-                SUM(CASE WHEN d.first_daily_date = ? THEN 1 ELSE 0 END) AS new_players,
-                SUM(CASE WHEN d.first_daily_date < ? THEN 1 ELSE 0 END) AS returning_players
-            FROM today_players t
-            JOIN daily_starts d ON d.player_id = t.player_id
-        `).bind(reportDate, reportDate, reportDate).first();
 
         /*
         Day-1 retention for the selected report date means:
@@ -214,39 +243,6 @@ export async function onRequestGet(context) {
             FROM player_daily_completions
         `).bind(reportDate).first();
 
-        const retentionActivity = await context.env.DB.prepare(`
-            WITH daily_starts AS (
-                SELECT
-                    player_id,
-                    MIN(challenge_date) AS first_daily_date
-                FROM game_events
-                WHERE event_type = 'game_started'
-                  AND game_mode = 'daily'
-                  AND player_id IS NOT NULL
-                GROUP BY player_id
-            ),
-            recent_players AS (
-                SELECT DISTINCT
-                    challenge_date,
-                    player_id
-                FROM game_events
-                WHERE event_type = 'game_started'
-                  AND game_mode = 'daily'
-                  AND challenge_date >= date(?, '-6 days')
-                  AND challenge_date <= ?
-                  AND player_id IS NOT NULL
-            )
-            SELECT
-                r.challenge_date AS date,
-                COUNT(*) AS unique_players,
-                SUM(CASE WHEN d.first_daily_date = r.challenge_date THEN 1 ELSE 0 END) AS new_players,
-                SUM(CASE WHEN d.first_daily_date < r.challenge_date THEN 1 ELSE 0 END) AS returning_players
-            FROM recent_players r
-            JOIN daily_starts d ON d.player_id = r.player_id
-            GROUP BY r.challenge_date
-            ORDER BY r.challenge_date
-        `).bind(reportDate, reportDate).all();
-
         const locations = await context.env.DB.prepare(`
             SELECT
                 location_name,
@@ -258,24 +254,43 @@ export async function onRequestGet(context) {
             WHERE event_type = 'round_completed'
               AND player_id IS NOT NULL
               AND location_name IS NOT NULL
+              AND challenge_date <= ?
             GROUP BY location_name, location_category
             ORDER BY average_score ASC, times_played DESC
-        `).all();
+        `).bind(reportDate).all();
 
-        return Response.json({
-            ok: true,
-            date: reportDate,
-            summary,
-            activity: activity.results || [],
-            modes: modes.results || [],
-            retention: {
-                today: retentionToday || {},
-                day1: dayOneRetention || {},
-                milestones: retentionMilestones || {},
-                activity: retentionActivity.results || []
+        const response = Response.json(
+            {
+                ok: true,
+                date: reportDate,
+                summary,
+                activity: activityRows,
+                modes: modes.results || [],
+                retention: {
+                    today: retentionToday,
+                    day1: dayOneRetention || {},
+                    milestones: retentionMilestones || {},
+                    activity: activityRows
+                },
+                locations: locations.results || []
             },
-            locations: locations.results || []
-        });
+            {
+                headers: {
+                    "Cache-Control": `public, max-age=${cacheSeconds}`
+                }
+            }
+        );
+
+        if (cache && cacheKey) {
+            context.waitUntil(
+                cache.put(
+                    cacheKey,
+                    response.clone()
+                )
+            );
+        }
+
+        return response;
 
     } catch (error) {
         console.error(
