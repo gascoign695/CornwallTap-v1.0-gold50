@@ -136,16 +136,16 @@ export async function onRequestGet(context) {
             ),
             daily_starts AS (
                 SELECT
-                    g.player_id,
+                    r.player_id,
                     MIN(g.challenge_date) AS first_daily_date
-                FROM game_events g
-                JOIN relevant_players r
-                  ON r.player_id = g.player_id
+                FROM relevant_players r
+                CROSS JOIN game_events g INDEXED BY idx_game_events_daily_start_player_date
                 WHERE g.event_type = 'game_started'
                   AND g.game_mode = 'daily'
+                  AND g.player_id = r.player_id
                   AND g.player_id IS NOT NULL
                   AND g.challenge_date <= ?
-                GROUP BY g.player_id
+                GROUP BY r.player_id
             )
             SELECT
                 r.challenge_date AS date,
