@@ -1,14 +1,12 @@
-const CURRENT_BUILD = "20260902-authoritative2";
-
 export async function onRequestGet() {
     return Response.json(
         {
             ok: true,
-            build: CURRENT_BUILD
+            build: "20260902-endgame1-1"
         },
         {
             headers: {
-                "Cache-Control": "no-store, no-cache, must-revalidate"
+                "cache-control": "no-store"
             }
         }
     );

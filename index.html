@@ -57,6 +57,42 @@
     >
 
     <link rel="stylesheet" href="css/style.css?v=4.7">
+
+<style>
+/* End-of-game growth CTA */
+.share-growth-cta {
+    margin: 10px 0 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f3f8f9;
+    text-align: center;
+}
+.share-growth-prompt {
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+.share-growth-button {
+    width: 100%;
+}
+.share-growth-note {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+.result-card .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 420px) {
+    .result-card .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .result-card .stat-box {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -251,7 +287,7 @@
                 View all 5 on map
             </button>
 
-            <button id="shareButton">
+            <button id="shareButton" class="hidden">
                 Share Score
             </button>
 
@@ -293,8 +329,8 @@
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
 
-<script src="js/locations.js?v=20260902-authoritative2"></script>
-<script src="js/game.js?v=20260902-authoritative2"></script>
+<script src="js/locations.js?v=20260902-endgame1-1"></script>
+<script src="js/game.js?v=20260902-endgame1-1"></script>
 
 </body>
 

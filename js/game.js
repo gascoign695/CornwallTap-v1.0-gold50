@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260902-authoritative2";
+const clientBuildVersion = "20260902-endgame1-1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -717,7 +717,7 @@ function shareRoundLine(scores) {
 
 function compactShareTitle(finalScore) {
     if (finalScore >= 450) return "Kernow Legend";
-    if (finalScore >= 350) return "Kernow Expert";
+    if (finalScore >= 350) return "Cornwall Expert";
     if (finalScore >= 250) return "Local Guide";
     if (finalScore >= 150) return "Adventurer";
     return "Explorer";
@@ -2685,9 +2685,11 @@ function journeyHtml(
             <span class="journey-details">
                 <span class="journey-name">${locationName}</span>
                 ${
-                    Number.isFinite(distancesList?.[index])
-                        ? `<span class="journey-distance">${displayDistance(distancesList[index])} away</span>`
-                        : ""
+                    scoresList?.[index] === 100
+                        ? `<span class="journey-distance">🎯 Bullseye</span>`
+                        : Number.isFinite(distancesList?.[index])
+                            ? `<span class="journey-distance">${displayDistance(distancesList[index])} away</span>`
+                            : ""
                 }
             </span>
 
@@ -2764,8 +2766,16 @@ function finalResultHtml({
                 ${squares}
             </div>
 
-            <div class="final-message">
-                ${celebration.message}
+            <div class="share-growth-cta">
+                <div class="share-growth-prompt">
+                    Think your friends can beat ${finalScore}?
+                </div>
+                <button type="button" class="share-growth-button" data-share-result>
+                    Challenge your friends
+                </button>
+                <div class="share-growth-note">
+                    Share your score and see who knows Cornwall best.
+                </div>
             </div>
 
             ${journeyHtml(
@@ -2780,17 +2790,6 @@ function finalResultHtml({
                     ? savedNote
                     : `
                         <div class="stats-grid">
-
-                            <div class="stat-box">
-                                <span class="stat-label">
-                                    Average distance
-                                </span>
-                                <span class="stat-value">
-                                    ${displayDistance(
-                                        averageDistance()
-                                    )}
-                                </span>
-                            </div>
 
                             <div class="stat-box">
                                 <span class="stat-label">
@@ -2823,9 +2822,6 @@ function finalResultHtml({
                     `
             }
 
-            <div class="share-preview">
-                Share your five coloured squares and challenge your friends.
-            </div>
 
         </div>
     `;
@@ -2971,6 +2967,21 @@ function bindJourneyReviewButtons() {
 }
 
 
+function bindShareGrowthButton() {
+    const button =
+        resultElement.querySelector("[data-share-result]");
+
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener(
+        "click",
+        shareScore
+    );
+}
+
+
 function showFinalResult() {
     gameFinished = true;
 
@@ -3024,6 +3035,7 @@ resultElement.innerHTML =
         });
 
     bindJourneyReviewButtons();
+    bindShareGrowthButton();
 
     reviewMapButton.classList.add("hidden");
     showResultButton.classList.add("hidden");
@@ -3032,6 +3044,7 @@ resultElement.innerHTML =
 
     shareButton.textContent =
         "Share Score";
+    shareButton.classList.add("hidden");
 
     playAgainButton.classList.toggle(
         "hidden",
@@ -3096,6 +3109,7 @@ function viewSavedDailyResult() {
         });
 
     bindJourneyReviewButtons();
+    bindShareGrowthButton();
 
     reviewMapButton.classList.add("hidden");
     showResultButton.classList.add("hidden");
@@ -3104,6 +3118,7 @@ function viewSavedDailyResult() {
 
     shareButton.textContent =
         "Share Score";
+    shareButton.classList.add("hidden");
 
     playAgainButton.classList.add(
         "hidden"
@@ -3144,11 +3159,9 @@ function shareText() {
 
 return [
     header,
-    "",
     shareRoundLine(scores),
-    "",
     `${currentScore}/500 • ${compactShareTitle(currentScore)}`,
-    "",
+    "Think you can beat my score?",
     canonicalShareUrl()
 ].join("\n");
 }
@@ -3466,6 +3479,10 @@ function showResultModal() {
 
 
 function hideResultModal() {
+    if (resultModal.contains(document.activeElement)) {
+        document.activeElement.blur();
+    }
+
     resultModal.classList.remove("visible");
 
     resultModal.setAttribute(
