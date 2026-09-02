@@ -197,6 +197,9 @@ let analyticsSessionId = null;
 let analyticsGameStartedAt = null;
 let analyticsPlayerId = null;
 
+let authoritativeDailyIds = null;
+let authoritativeDailyDateKey = null;
+
 let guessMarker = null;
 let answerMarker = null;
 let answerLine = null;
@@ -1381,7 +1384,7 @@ function clearDailyAttempt() {
 }
 
 
-function resumeDailyAttempt(attempt) {
+async function resumeDailyAttempt(attempt) {
     gameMode = "daily";
     totalRounds = standardTotalRounds;
     resetGameState();
@@ -1404,6 +1407,17 @@ function resumeDailyAttempt(attempt) {
 
     if (roundTotalElement) {
         roundTotalElement.textContent = totalRounds;
+    }
+
+    if (!localDevelopmentHosts.includes(window.location.hostname)) {
+        try {
+            await loadAuthoritativeDaily(currentDateKey());
+        } catch (error) {
+            console.error("Daily Challenge could not be resumed:", error);
+            showToast("Today's Daily is temporarily unavailable. Please try again shortly.");
+            showStartScreen();
+            return;
+        }
     }
 
     showGameScreen();
@@ -1915,20 +1929,81 @@ function selectLegacyDailyLocation() {
 }
 
 
+async function loadAuthoritativeDaily(dateKey = currentDateKey()) {
+    if (
+        authoritativeDailyDateKey === dateKey &&
+        Array.isArray(authoritativeDailyIds) &&
+        authoritativeDailyIds.length === standardTotalRounds
+    ) {
+        return authoritativeDailyIds;
+    }
+
+    const response = await fetch(
+        `/api/daily?date=${encodeURIComponent(dateKey)}`,
+        { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Daily endpoint returned HTTP ${response.status}.`);
+    }
+
+    const data = await response.json();
+
+    if (
+        !data?.ok ||
+        data.date !== dateKey ||
+        !Array.isArray(data.location_ids) ||
+        data.location_ids.length !== standardTotalRounds
+    ) {
+        throw new Error("Daily endpoint returned an invalid challenge.");
+    }
+
+    authoritativeDailyDateKey = dateKey;
+    authoritativeDailyIds = data.location_ids.map(Number);
+
+    return authoritativeDailyIds;
+}
+
+
+function authoritativeDailyChallenge() {
+    if (
+        !Array.isArray(authoritativeDailyIds) ||
+        authoritativeDailyIds.length !== standardTotalRounds
+    ) {
+        return null;
+    }
+
+    const byId = new Map(
+        locations.map(location => [location.id, location])
+    );
+
+    return authoritativeDailyIds.map(id => byId.get(id) || null);
+}
+
+
 function selectDailyLocation() {
     const dateKey = currentDateKey();
-    const frozenChallenge = frozenDailyChallenge(dateKey);
 
-    if (frozenChallenge) {
-        current = frozenChallenge[round - 1];
-    } else if (dateKey < frozenDailyHistoryStartKey) {
-        selectLegacyDailyLocation();
-        return;
-    } else {
-        const challenge =
-            generateV5DailyChallenge(dateKey);
+    if (!localDevelopmentHosts.includes(window.location.hostname)) {
+        const challenge = authoritativeDailyChallenge();
+
+        if (!challenge) {
+            throw new Error("Authoritative Daily Challenge has not loaded.");
+        }
 
         current = challenge[round - 1];
+    } else {
+        const frozenChallenge = frozenDailyChallenge(dateKey);
+
+        if (frozenChallenge) {
+            current = frozenChallenge[round - 1];
+        } else if (dateKey < frozenDailyHistoryStartKey) {
+            selectLegacyDailyLocation();
+            return;
+        } else {
+            const challenge = generateV5DailyChallenge(dateKey);
+            current = challenge[round - 1];
+        }
     }
 
     if (!current) {
@@ -1937,6 +2012,7 @@ function selectDailyLocation() {
         );
     }
 }
+
 
 
 function selectPracticeLocation() {
@@ -2142,7 +2218,7 @@ function trackEvent(eventType, details = {}) {
     });
 }
 
-function startMode(selectedMode) {
+async function startMode(selectedMode) {
     /*
     Defence-in-depth for the Daily Challenge lock.
     Any code path that tries to start a Daily must first respect an
@@ -2161,7 +2237,7 @@ function startMode(selectedMode) {
         const savedAttempt = getSavedDailyAttempt();
 
         if (savedAttempt) {
-            resumeDailyAttempt(savedAttempt);
+            await resumeDailyAttempt(savedAttempt);
             return;
         }
     }
@@ -2184,6 +2260,17 @@ function startMode(selectedMode) {
             : standardTotalRounds;
 
     resetGameState();
+
+    if (gameMode === "daily" && !localDevelopmentHosts.includes(window.location.hostname)) {
+        try {
+            await loadAuthoritativeDaily(currentDateKey());
+        } catch (error) {
+            console.error("Daily Challenge could not be loaded:", error);
+            showToast("Today's Daily is temporarily unavailable. Please try again shortly.");
+            showStartScreen();
+            return;
+        }
+    }
 
     analyticsPlayerId =
     getAnalyticsPlayerId();
@@ -3198,7 +3285,7 @@ nextButton.addEventListener(
 
 dailyStartButton.addEventListener(
     "click",
-    function () {
+    async function () {
         const saved =
             getSavedDailyResult();
 
@@ -3211,7 +3298,7 @@ dailyStartButton.addEventListener(
             getSavedDailyAttempt();
 
         if (savedAttempt && !dailyLockBypass) {
-            resumeDailyAttempt(savedAttempt);
+            await resumeDailyAttempt(savedAttempt);
             return;
         }
 
