@@ -11,6 +11,8 @@ development and testing remain easy.
 
 const developerMode = false;
 
+const clientBuildVersion = "20260902-authoritative2";
+
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
 
@@ -3283,9 +3285,58 @@ nextButton.addEventListener(
 );
 
 
+async function currentBuildBeforeDaily() {
+    if (localDevelopmentHosts.includes(window.location.hostname)) {
+        return true;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/version?t=${Date.now()}`,
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Version endpoint returned HTTP ${response.status}.`);
+        }
+
+        const data = await response.json();
+        const serverBuild = String(data?.build || "");
+
+        if (!data?.ok || !serverBuild) {
+            throw new Error("Version endpoint returned an invalid build.");
+        }
+
+        if (serverBuild === clientBuildVersion) {
+            return true;
+        }
+
+        const refreshUrl = new URL(window.location.href);
+        refreshUrl.searchParams.set("build", serverBuild);
+        window.location.replace(refreshUrl.toString());
+        return false;
+    } catch (error) {
+        /*
+        The authoritative Daily endpoint still protects fairness if the
+        lightweight version check is temporarily unavailable, so do not
+        block play solely because this check failed.
+        */
+        console.warn("Build version check could not be completed.", error);
+        return true;
+    }
+}
+
+
 dailyStartButton.addEventListener(
     "click",
     async function () {
+        const buildIsCurrent =
+            await currentBuildBeforeDaily();
+
+        if (!buildIsCurrent) {
+            return;
+        }
+
         const saved =
             getSavedDailyResult();
 
