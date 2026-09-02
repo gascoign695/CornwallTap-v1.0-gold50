@@ -222,26 +222,9 @@ export async function onRequestGet(context) {
               ON r.player_id = p.player_id
         `).bind(reportDate, reportDate).first();
 
-        const retentionMilestones = await context.env.DB.prepare(`
-            WITH player_daily_completions AS (
-                SELECT
-                    player_id,
-                    COUNT(DISTINCT challenge_date) AS completed_days
-                FROM game_events
-                WHERE event_type = 'round_completed'
-                  AND round_number = 5
-                  AND game_mode = 'daily'
-                  AND player_id IS NOT NULL
-                  AND challenge_date <= ?
-                GROUP BY player_id
-            )
-            SELECT
-                SUM(CASE WHEN completed_days >= 2 THEN 1 ELSE 0 END) AS players_2_plus,
-                SUM(CASE WHEN completed_days >= 3 THEN 1 ELSE 0 END) AS players_3_plus,
-                SUM(CASE WHEN completed_days >= 5 THEN 1 ELSE 0 END) AS players_5_plus,
-                SUM(CASE WHEN completed_days >= 7 THEN 1 ELSE 0 END) AS players_7_plus
-            FROM player_daily_completions
-        `).bind(reportDate).first();
+        // TEMP diagnostic: retention milestones query disabled to measure its D1 read cost.
+        const retentionMilestones = {};
+
 
         const response = Response.json(
             {
