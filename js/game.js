@@ -161,6 +161,119 @@ const scoringProfiles = {
     }
 };
 
+
+
+/*
+Devon Easter egg.
+
+The border points below are sampled from the published Cornwall administrative
+boundary (ONS/OS open boundary data). The test is intentionally conservative:
+it only fires for clicks clearly on the Devon side and leaves a safety margin
+around the county line so borderline taps are not mislabelled.
+*/
+const DEVON_BORDER_POINTS = [
+    [50.35800, -4.17155],
+    [50.35899, -4.19598],
+    [50.36808, -4.20805],
+    [50.38781, -4.20108],
+    [50.40411, -4.21034],
+    [50.42142, -4.22274],
+    [50.43583, -4.19965],
+    [50.46341, -4.23746],
+    [50.49181, -4.19822],
+    [50.50317, -4.17956],
+    [50.53301, -4.20617],
+    [50.54337, -4.24676],
+    [50.56862, -4.27838],
+    [50.58166, -4.27002],
+    [50.63329, -4.29919],
+    [50.64600, -4.33410],
+    [50.68900, -4.34781],
+    [50.71823, -4.36046],
+    [50.74722, -4.38387],
+    [50.77001, -4.37994],
+    [50.77772, -4.39238],
+    [50.76189, -4.40760],
+    [50.78513, -4.45021],
+    [50.80770, -4.44567],
+    [50.84644, -4.44111],
+    [50.86557, -4.41984],
+    [50.91297, -4.46156],
+    [50.92842, -4.45499],
+    [50.92829, -4.54486],
+    [50.92786, -4.54495]
+];
+
+const DEVON_EASTER_EGG_ZONE = [
+    ...DEVON_BORDER_POINTS,
+
+    // The administrative border reaches the north coast at the final point.
+    // From there, Devon continues north/east to the edge of the playable map.
+    // Going vertically north first prevents the polygon-closing line from
+    // incorrectly cutting across north-west Devon.
+    [51.05, -4.54495],
+    [51.05, -3.85],
+    [50.35, -3.85]
+];
+
+function pointInsideLatLonPolygon(lat, lon, polygon) {
+    let inside = false;
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const yi = polygon[i][0];
+        const xi = polygon[i][1];
+        const yj = polygon[j][0];
+        const xj = polygon[j][1];
+
+        const intersects =
+            ((yi > lat) !== (yj > lat)) &&
+            (lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi);
+
+        if (intersects) inside = !inside;
+    }
+
+    return inside;
+}
+
+function distanceToBorderKm(lat, lon) {
+    const latScale = 111.32;
+    const lonScale = 111.32 * Math.cos(lat * Math.PI / 180);
+    let best = Infinity;
+
+    for (let i = 1; i < DEVON_BORDER_POINTS.length; i += 1) {
+        const a = DEVON_BORDER_POINTS[i - 1];
+        const b = DEVON_BORDER_POINTS[i];
+        const ax = (a[1] - lon) * lonScale;
+        const ay = (a[0] - lat) * latScale;
+        const bx = (b[1] - lon) * lonScale;
+        const by = (b[0] - lat) * latScale;
+        const dx = bx - ax;
+        const dy = by - ay;
+        const len2 = dx * dx + dy * dy;
+        const t = len2 === 0
+            ? 0
+            : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2));
+        const px = ax + t * dx;
+        const py = ay + t * dy;
+        best = Math.min(best, Math.hypot(px, py));
+    }
+
+    return best;
+}
+
+function isClearDevonGuess(lat, lon) {
+    if (lat < 50.35 || lat > 51.05 || lon < -4.60 || lon > -3.85) {
+        return false;
+    }
+
+    if (!pointInsideLatLonPolygon(lat, lon, DEVON_EASTER_EGG_ZONE)) {
+        return false;
+    }
+
+    // Keep a generous dead-zone around the actual border.
+    return distanceToBorderKm(lat, lon) >= 1.5;
+}
+
 const localDevelopmentHosts = [
     "localhost",
     "127.0.0.1"
@@ -2620,6 +2733,9 @@ scoreElement.textContent =
         progressFill.style.width =
             `${(round / totalRounds) * 100}%`;
 
+        const devonAlert =
+            isClearDevonGuess(event.latlng.lat, event.latlng.lng);
+
         resultElement.innerHTML = `
             <div class="result-card">
 
@@ -2644,6 +2760,17 @@ scoreElement.textContent =
                 <div class="knowledge-message">
                     ${feedback.detail}
                 </div>
+
+                ${
+                    devonAlert
+                        ? `
+                            <div class="knowledge-message">
+                                <strong>🚨 Devon alert!</strong><br>
+                                You've crossed the border. Get back to Cornwall!
+                            </div>
+                        `
+                        : ""
+                }
 
                 <div class="round-score">
                     ${points}<span>/100</span>
