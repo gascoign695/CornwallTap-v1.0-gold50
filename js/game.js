@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260902-miles1";
+const clientBuildVersion = "20260903-difficulty-v6c";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -21,15 +21,13 @@ const difficultyBands = [
     { min: 3, max: 4 },
     { min: 5, max: 6 },
     { min: 7, max: 8 },
-    { min: 7, max: 10 }
+    { min: 9, max: 10 }
 ];
 
 const dailyExcludedLocationIds = [
-    20,
     45,
     46,
-    47,
-    50
+    47
 ];
 
 const roundStages = [
@@ -1663,15 +1661,15 @@ function legacyDailyLocationOrder(possible, band) {
 
 
 /*
-Daily selector v5 begins on 2 September 2026.
+Daily selector v6c begins on 4 September 2026.
 
-The real Daily challenges from 14 August-1 September are frozen below by
+The real Daily challenges from 14 August-3 September are frozen below by
 location ID. That historical record must not be rebuilt from the current
 location pool, because locations can later be added, removed or moved between
 difficulty bands.
 */
-const dailyV5SelectorVersion = "v5";
-const dailyV5EpochKey = "2026-09-02";
+const dailyV6SelectorVersion = "v6c";
+const dailyV6EpochKey = "2026-09-04";
 const frozenDailyHistoryStartKey = "2026-08-14";
 const dailyRepeatProtectionDays = 19;
 const dailyR45RepeatProtectionDays = 16;
@@ -1696,7 +1694,9 @@ const frozenDailyHistoryIds = [
     [57, 64, 71, 121, 125],
     [63, 82, 72, 96, 115],
     [65, 81, 78, 119, 122],
-    [66, 98, 83, 117, 123]
+    [66, 98, 83, 117, 123],
+    [67, 102, 134, 126, 17],
+    [73, 135, 139, 127, 37]
 ];
 
 
@@ -1740,12 +1740,12 @@ function frozenDailyChallenge(dateKey) {
 }
 
 
-function dailyV5DayNumber(dateKey) {
+function dailyV6DayNumber(dateKey) {
     const date =
         new Date(`${dateKey}T00:00:00Z`);
 
     const epoch =
-        new Date(`${dailyV5EpochKey}T00:00:00Z`);
+        new Date(`${dailyV6EpochKey}T00:00:00Z`);
 
     return Math.floor(
         (date - epoch) /
@@ -1754,15 +1754,15 @@ function dailyV5DayNumber(dateKey) {
 }
 
 
-function dailyV5LocationOrder(possible, band) {
+function dailyV6LocationOrder(possible, band) {
     return [...possible].sort(
         (first, second) => {
             const firstSeed = textSeed(
-                `cornwalltap-${dailyV5SelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
+                `cornwalltap-${dailyV6SelectorVersion}-band-${band.min}-${band.max}-location-${first.id}`
             );
 
             const secondSeed = textSeed(
-                `cornwalltap-${dailyV5SelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
+                `cornwalltap-${dailyV6SelectorVersion}-band-${band.min}-${band.max}-location-${second.id}`
             );
 
             return firstSeed - secondSeed || first.id - second.id;
@@ -1771,7 +1771,7 @@ function dailyV5LocationOrder(possible, band) {
 }
 
 
-function dailyV5Pools() {
+function dailyV6Pools() {
     return difficultyBands.map(band => {
         const possible = locations.filter(
             location =>
@@ -1786,7 +1786,7 @@ function dailyV5Pools() {
             );
         }
 
-        return dailyV5LocationOrder(possible, band);
+        return dailyV6LocationOrder(possible, band);
     });
 }
 
@@ -1803,112 +1803,144 @@ function farEnoughFromChallenge(candidate, challenge) {
 }
 
 
-function generateV5DailyChallenge(dateKey) {
+function generateV6DailyChallenge(dateKey) {
     const targetDayNumber =
-        dailyV5DayNumber(dateKey);
+        dailyV6DayNumber(dateKey);
 
     if (targetDayNumber < 0) {
         throw new Error(
-            `Daily selector ${dailyV5SelectorVersion} only supports dates from ${dailyV5EpochKey}.`
+            `Daily selector ${dailyV6SelectorVersion} only supports dates from ${dailyV6EpochKey}.`
         );
     }
 
-    const pools = dailyV5Pools();
+    const pools = dailyV6Pools();
 
-    // Seed v5 with every real Daily served from 14 August-1 September.
+    // Seed v6 with every real Daily served from 14 August-3 September.
     const recentChallenges = frozenDailyHistory();
     let targetChallenge = null;
+
+    function candidateList(roundIndex, dayNumber, challenge) {
+        const protectionDays =
+            roundIndex >= 3
+                ? dailyR45RepeatProtectionDays
+                : dailyRepeatProtectionDays;
+
+        /*
+        Protect recent location IDs globally, not just in their previous round.
+        This matters at the v6 cutover because recalibration moved some locations
+        between difficulty bands; changing difficulty must never reset history.
+        */
+        const protectedIds = new Set(
+            recentChallenges
+                .slice(-protectionDays)
+                .flat()
+                .filter(Boolean)
+                .map(location => location.id)
+        );
+
+        const ordered = pools[roundIndex];
+        const startIndex = (
+            dayNumber +
+            textSeed(
+                `${dailyV6SelectorVersion}-round-${roundIndex + 1}`
+            )
+        ) % ordered.length;
+
+        const candidates = [];
+
+        for (
+            let offset = 0;
+            offset < ordered.length;
+            offset += 1
+        ) {
+            const candidate =
+                ordered[(startIndex + offset) % ordered.length];
+
+            if (protectedIds.has(candidate.id)) {
+                continue;
+            }
+
+            if (
+                challenge.some(
+                    location =>
+                        location && location.id === candidate.id
+                )
+            ) {
+                continue;
+            }
+
+            if (
+                !farEnoughFromChallenge(
+                    candidate,
+                    challenge.filter(Boolean)
+                )
+            ) {
+                continue;
+            }
+
+            candidates.push(candidate);
+        }
+
+        return candidates;
+    }
+
+    function buildChallenge(dayNumber) {
+        const challenge =
+            new Array(standardTotalRounds).fill(null);
+
+        /*
+        Round 5 has the smallest pool, so place it first. Backtracking lets the
+        other rounds move around it rather than weakening repeat protection or
+        the 15 km separation rule when the final-round choice is constrained.
+        */
+        const buildOrder = [4, 0, 1, 3, 2];
+
+        function place(position) {
+            if (position >= buildOrder.length) {
+                return true;
+            }
+
+            const roundIndex = buildOrder[position];
+            const candidates =
+                candidateList(
+                    roundIndex,
+                    dayNumber,
+                    challenge
+                );
+
+            for (const candidate of candidates) {
+                challenge[roundIndex] = candidate;
+
+                if (place(position + 1)) {
+                    return true;
+                }
+
+                challenge[roundIndex] = null;
+            }
+
+            return false;
+        }
+
+        if (!place(0)) {
+            throw new Error(
+                `Daily selector ${dailyV6SelectorVersion} could not build ${dateKey}. ` +
+                `Repeat protection or the ${dailyMinimumSeparationKm} km separation rule needs a larger eligible pool.`
+            );
+        }
+
+        return challenge;
+    }
 
     for (
         let dayNumber = 0;
         dayNumber <= targetDayNumber;
         dayNumber += 1
     ) {
-        const challenge = [];
-
-        for (
-            let roundIndex = 0;
-            roundIndex < standardTotalRounds;
-            roundIndex += 1
-        ) {
-            const relevantHistory =
-                roundIndex >= 3
-                    ? recentChallenges.slice(-dailyR45RepeatProtectionDays)
-                    : recentChallenges.slice(-dailyRepeatProtectionDays);
-
-            /*
-            Rounds 4 and 5 share overlapping difficulty pools.
-            A location used in either position is therefore protected
-            from BOTH positions during the R4/R5 protection window.
-            */
-            const protectedIds = new Set(
-                roundIndex >= 3
-                    ? relevantHistory
-                        .flatMap(previous => [previous[3], previous[4]])
-                        .filter(Boolean)
-                        .map(location => location.id)
-                    : relevantHistory
-                        .map(previous => previous[roundIndex])
-                        .filter(Boolean)
-                        .map(location => location.id)
-            );
-
-            const ordered = pools[roundIndex];
-            const startIndex = (
-                dayNumber +
-                textSeed(
-                    `${dailyV5SelectorVersion}-round-${roundIndex + 1}`
-                )
-            ) % ordered.length;
-
-            let selected = null;
-
-            for (
-                let offset = 0;
-                offset < ordered.length;
-                offset += 1
-            ) {
-                const candidate =
-                    ordered[(startIndex + offset) % ordered.length];
-
-                if (protectedIds.has(candidate.id)) {
-                    continue;
-                }
-
-                if (
-                    challenge.some(
-                        location => location.id === candidate.id
-                    )
-                ) {
-                    continue;
-                }
-
-                if (!farEnoughFromChallenge(candidate, challenge)) {
-                    continue;
-                }
-
-                selected = candidate;
-                break;
-            }
-
-            if (!selected) {
-                const protection =
-                    roundIndex >= 3
-                        ? `${dailyR45RepeatProtectionDays}-day R4/R5 cross-round repeat protection`
-                        : `${dailyRepeatProtectionDays}-day same-round repeat protection`;
-
-                throw new Error(
-                    `Daily selector ${dailyV5SelectorVersion} could not build ${dateKey} round ${roundIndex + 1}. ` +
-                    `The ${protection} or ${dailyMinimumSeparationKm} km separation rule needs a larger eligible pool.`
-                );
-            }
-
-            challenge.push(selected);
-        }
+        const challenge =
+            buildChallenge(dayNumber);
 
         recentChallenges.push(challenge);
 
-        // Rounds 1-3 use the longer 19-day protection window.
         while (
             recentChallenges.length > dailyRepeatProtectionDays
         ) {
@@ -1922,7 +1954,6 @@ function generateV5DailyChallenge(dateKey) {
 
     return targetChallenge;
 }
-
 
 function selectLegacyDailyLocation() {
     const band =
@@ -2049,7 +2080,7 @@ function selectDailyLocation() {
             selectLegacyDailyLocation();
             return;
         } else {
-            const challenge = generateV5DailyChallenge(dateKey);
+            const challenge = generateV6DailyChallenge(dateKey);
             current = challenge[round - 1];
         }
     }
