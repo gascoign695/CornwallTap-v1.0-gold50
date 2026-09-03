@@ -2853,10 +2853,10 @@ function finalResultHtml({
                     Think your friends can beat ${finalScore}?
                 </div>
                 <button type="button" class="share-growth-button" data-share-result>
-                    Challenge your friends
+                    Share your score
                 </button>
                 <div class="share-growth-note">
-                    Share your score and see who knows Cornwall best.
+                    Challenge your friends and see who knows Cornwall best.
                 </div>
             </div>
 
@@ -3425,18 +3425,20 @@ async function currentBuildBeforeDaily() {
 dailyStartButton.addEventListener(
     "click",
     async function () {
+        const saved =
+            getSavedDailyResult();
+
+        // Viewing an already-completed Daily is entirely local and must not
+        // depend on the version endpoint or network availability.
+        if (saved && !dailyLockBypass) {
+            viewSavedDailyResult();
+            return;
+        }
+
         const buildIsCurrent =
             await currentBuildBeforeDaily();
 
         if (!buildIsCurrent) {
-            return;
-        }
-
-        const saved =
-            getSavedDailyResult();
-
-        if (saved && !dailyLockBypass) {
-            viewSavedDailyResult();
             return;
         }
 
