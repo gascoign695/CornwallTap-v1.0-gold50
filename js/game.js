@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260903-difficulty-v6c";
+const clientBuildVersion = "20260905-difficulty-recalibration";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -1774,15 +1774,15 @@ function legacyDailyLocationOrder(possible, band) {
 
 
 /*
-Daily selector v6c begins on 4 September 2026.
+Daily selector v6c difficulty recalibration takes effect from 6 September 2026.
 
-The real Daily challenges from 14 August-3 September are frozen below by
+The real Daily challenges from 14 August-5 September are frozen below by
 location ID. That historical record must not be rebuilt from the current
 location pool, because locations can later be added, removed or moved between
 difficulty bands.
 */
 const dailyV6SelectorVersion = "v6c";
-const dailyV6EpochKey = "2026-09-04";
+const dailyV6EpochKey = "2026-09-06";
 const frozenDailyHistoryStartKey = "2026-08-14";
 const dailyRepeatProtectionDays = 19;
 const dailyR45RepeatProtectionDays = 16;
@@ -1809,7 +1809,9 @@ const frozenDailyHistoryIds = [
     [65, 81, 78, 119, 122],
     [66, 98, 83, 117, 123],
     [67, 102, 134, 126, 17],
-    [73, 135, 139, 127, 37]
+    [73, 135, 139, 127, 37],
+    [74, 30, 54, 130, 116],
+    [151, 31, 92, 120, 128]
 ];
 
 
