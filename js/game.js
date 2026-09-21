@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260905-difficulty-recalibration";
+const clientBuildVersion = "20260921-session-safety";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -309,6 +309,8 @@ let finalReviewMode = false;
 let analyticsSessionId = null;
 let analyticsGameStartedAt = null;
 let analyticsPlayerId = null;
+let analyticsChallengeDate = null;
+let dailyStartInProgress = false;
 
 let authoritativeDailyIds = null;
 let authoritativeDailyDateKey = null;
@@ -836,6 +838,11 @@ function compactShareTitle(finalScore) {
 
 
 function shareDisplayDate() {
+    const dateKey =
+        gameMode === "daily"
+            ? activeDailyDateKey()
+            : currentDateKey();
+
     return new Intl.DateTimeFormat(
         "en-GB",
         {
@@ -843,7 +850,7 @@ function shareDisplayDate() {
             day: "numeric",
             month: "short"
         }
-    ).format(new Date());
+    ).format(new Date(`${dateKey}T12:00:00Z`));
 }
 
 
@@ -852,6 +859,11 @@ function currentDateKey() {
         cornwallDateParts();
 
     return `${date.year}-${date.month}-${date.day}`;
+}
+
+
+function activeDailyDateKey() {
+    return analyticsChallengeDate || currentDateKey();
 }
 
 
@@ -964,9 +976,8 @@ function daysBetweenDateKeys(
 }
 
 
-function updateDailyStreak(statistics) {
-    const today =
-        currentDateKey();
+function updateDailyStreak(statistics, dailyDateKey = currentDateKey()) {
+    const today = dailyDateKey;
 
     if (statistics.lastDailyDate === today) {
         return false;
@@ -1019,9 +1030,11 @@ function recordCompletedGame() {
     Localhost permits replaying today's Daily Challenge for
     testing, but only the first completion can affect stats.
     */
+    const completedDateKey = activeDailyDateKey();
+
     if (
         statistics.lastDailyDate ===
-        currentDateKey()
+        completedDateKey
     ) {
         return;
     }
@@ -1073,14 +1086,14 @@ function recordCompletedGame() {
         : [];
 
     history.push({
-        date: currentDateKey(),
+        date: completedDateKey,
         score
     });
 
     statistics.dailyHistory =
         history.slice(-90);
 
-    updateDailyStreak(statistics);
+    updateDailyStreak(statistics, completedDateKey);
     saveStatistics(statistics);
 }
 
@@ -1477,15 +1490,15 @@ function hideStatisticsScreen() {
 }
 
 
-function dailyStorageKey() {
-    return `cornwallTapDailyResult-${currentDateKey()}`;
+function dailyStorageKey(dateKey = currentDateKey()) {
+    return `cornwallTapDailyResult-${dateKey}`;
 }
 
 
 
 
-function dailyAttemptStorageKey() {
-    return `cornwallTapDailyAttempt-${currentDateKey()}`;
+function dailyAttemptStorageKey(dateKey = currentDateKey()) {
+    return `cornwallTapDailyAttempt-${dateKey}`;
 }
 
 
@@ -1520,8 +1533,10 @@ function saveDailyAttempt() {
         return;
     }
 
+    const dailyDateKey = activeDailyDateKey();
+
     const attempt = {
-        date: currentDateKey(),
+        date: dailyDateKey,
         score,
         roundScores: [...roundScores],
         roundDistances: [...roundDistances],
@@ -1532,14 +1547,16 @@ function saveDailyAttempt() {
     };
 
     localStorage.setItem(
-        dailyAttemptStorageKey(),
+        dailyAttemptStorageKey(dailyDateKey),
         JSON.stringify(attempt)
     );
 }
 
 
 function clearDailyAttempt() {
-    localStorage.removeItem(dailyAttemptStorageKey());
+    localStorage.removeItem(
+        dailyAttemptStorageKey(activeDailyDateKey())
+    );
 }
 
 
@@ -1559,6 +1576,7 @@ async function resumeDailyAttempt(attempt) {
     analyticsPlayerId = getAnalyticsPlayerId();
     analyticsSessionId = attempt.sessionId || createAnalyticsSessionId();
     analyticsGameStartedAt = Number(attempt.startedAt) || Date.now();
+    analyticsChallengeDate = attempt.date || currentDateKey();
 
     scoreElement.textContent = score;
     modeLabelElement.textContent = "Today's Challenge";
@@ -1570,7 +1588,7 @@ async function resumeDailyAttempt(attempt) {
 
     if (!localDevelopmentHosts.includes(window.location.hostname)) {
         try {
-            await loadAuthoritativeDaily(currentDateKey());
+            await loadAuthoritativeDaily(activeDailyDateKey());
         } catch (error) {
             console.error("Daily Challenge could not be resumed:", error);
             showToast("Today's Daily is temporarily unavailable. Please try again shortly.");
@@ -1616,8 +1634,10 @@ function getSavedDailyResult() {
 
 
 function saveDailyResult() {
+    const dailyDateKey = activeDailyDateKey();
+
     const result = {
-        date: currentDateKey(),
+        date: dailyDateKey,
         score,
         title: titleForScore(score),
         squares:
@@ -1631,7 +1651,7 @@ function saveDailyResult() {
     };
 
     localStorage.setItem(
-        dailyStorageKey(),
+        dailyStorageKey(dailyDateKey),
         JSON.stringify(result)
     );
 }
@@ -2390,7 +2410,10 @@ function trackEvent(eventType, details = {}) {
     const payload = {
     event_type: eventType,
     game_mode: gameMode,
-    challenge_date: currentDateKey(),
+    challenge_date:
+        gameMode === "daily"
+            ? activeDailyDateKey()
+            : currentDateKey(),
     session_id: analyticsSessionId,
     player_id: analyticsPlayerId,
     device_type: analyticsDeviceType(),
@@ -2455,9 +2478,14 @@ async function startMode(selectedMode) {
 
     resetGameState();
 
+    analyticsChallengeDate =
+        gameMode === "daily"
+            ? currentDateKey()
+            : null;
+
     if (gameMode === "daily" && !localDevelopmentHosts.includes(window.location.hostname)) {
         try {
-            await loadAuthoritativeDaily(currentDateKey());
+            await loadAuthoritativeDaily(activeDailyDateKey());
         } catch (error) {
             console.error("Daily Challenge could not be loaded:", error);
             showToast("Today's Daily is temporarily unavailable. Please try again shortly.");
@@ -3564,22 +3592,36 @@ dailyStartButton.addEventListener(
             return;
         }
 
-        const buildIsCurrent =
-            await currentBuildBeforeDaily();
-
-        if (!buildIsCurrent) {
+        // Lock synchronously before any await. This prevents rapid taps from
+        // creating multiple Daily sessions while the version/API checks run.
+        if (dailyStartInProgress) {
             return;
         }
 
-        const savedAttempt =
-            getSavedDailyAttempt();
+        dailyStartInProgress = true;
+        dailyStartButton.disabled = true;
 
-        if (savedAttempt && !dailyLockBypass) {
-            await resumeDailyAttempt(savedAttempt);
-            return;
+        try {
+            const buildIsCurrent =
+                await currentBuildBeforeDaily();
+
+            if (!buildIsCurrent) {
+                return;
+            }
+
+            const savedAttempt =
+                getSavedDailyAttempt();
+
+            if (savedAttempt && !dailyLockBypass) {
+                await resumeDailyAttempt(savedAttempt);
+                return;
+            }
+
+            await startMode("daily");
+        } finally {
+            dailyStartInProgress = false;
+            dailyStartButton.disabled = false;
         }
-
-        startMode("daily");
     }
 );
 
