@@ -3001,6 +3001,18 @@ function finalResultHtml({
                 ${finalScore}<span>/500</span>
             </div>
 
+            ${
+    gameMode === "daily"
+        ? `
+            <div
+                id="daily-percentile"
+                class="locked-message"
+            >
+                Checking how you compare...
+            </div>
+        `
+        : ""
+}
             <div class="round-summary">
                 ${squares}
             </div>
@@ -3066,6 +3078,53 @@ function finalResultHtml({
     `;
 }
 
+async function loadDailyPercentile(score) {
+    const element =
+        document.getElementById("daily-percentile");
+
+    if (!element) return;
+
+    try {
+        const date = activeDailyDateKey();
+
+        const response = await fetch(
+            `/api/daily-percentile?date=${encodeURIComponent(date)}&score=${encodeURIComponent(score)}`,
+            {
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Daily percentile request failed: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        if (!data.ok) {
+            throw new Error(
+                data.error || "Daily percentile unavailable"
+            );
+        }
+
+        if (!data.ready) {
+            element.innerHTML =
+                "🌅 Early bird! Player comparisons will appear as more scores come in.";
+            return;
+        }
+
+        element.innerHTML =
+            `🏆 You beat <strong>${data.percentile}%</strong> of players so far today.`;
+    } catch (error) {
+        console.warn(
+            "Daily percentile unavailable:",
+            error
+        );
+
+        element.remove();
+    }
+}
 
 function normaliseReviewData(reviews) {
     if (!Array.isArray(reviews)) {
@@ -3272,6 +3331,13 @@ resultElement.innerHTML =
             distancesList: roundDistances,
             reviewAvailable: finalReviewData.length > 0
         });
+
+if (gameMode === "daily") {
+    setTimeout(
+        () => loadDailyPercentile(score),
+        250
+    );
+}
 
     bindJourneyReviewButtons();
     bindShareGrowthButton();
