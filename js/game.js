@@ -3413,6 +3413,11 @@ function viewSavedDailyResult() {
             saved: true
         });
 
+    setTimeout(
+        () => loadDailyPercentile(saved.score),
+        250
+);
+
     bindJourneyReviewButtons();
     bindShareGrowthButton();
 
