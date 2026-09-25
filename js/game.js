@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260921-session-safety";
+const clientBuildVersion = "20260925-daily-percentile2";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
