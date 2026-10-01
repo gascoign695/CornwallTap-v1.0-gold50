@@ -13,10 +13,10 @@ vm.runInNewContext(
 );
 const locations = context.__locations;
 
-const bands = [[1,2],[3,4],[5,6],[7,8],[7,10]];
-const excluded = [20,45,46,47,50];
+const bands = [[1,2],[3,4],[5,6],[7,8],[9,10]];
+const excluded = [45,46,47];
 const sameRoundProtect = 19;
-const r45Protect = 12;
+const r45Protect = 16;
 const minKm = 15;
 const v3Epoch = "2026-08-14";
 const v4Epoch = "2026-08-26";
