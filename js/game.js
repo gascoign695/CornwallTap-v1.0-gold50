@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20260925-daily-percentile2";
+const clientBuildVersion = "20261023-confirm-guess1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -296,6 +296,7 @@ let score = 0;
 let current = null;
 let guessed = false;
 let gameFinished = false;
+let pendingGuessLatLng = null;
 
 let roundScores = [];
 let roundDistances = [];
@@ -429,7 +430,11 @@ const backToSummaryButton =
 const toastElement =
     document.getElementById("toast");
 
+const confirmGuessToggle =
+    document.getElementById("confirmGuessToggle");
 
+const confirmGuessButton =
+    document.getElementById("confirmGuessButton");
 /*
 CornwallTap map area.
 
@@ -887,6 +892,9 @@ const statisticsStorageKey =
 const distanceUnitStorageKey =
     "cornwallTapDistanceUnit";
 
+const confirmGuessStorageKey =
+    "cornwallTapConfirmGuess";    
+
 
 function getDistanceUnit() {
     return localStorage.getItem(distanceUnitStorageKey) === "km"
@@ -901,7 +909,34 @@ function setDistanceUnit(unit) {
         unit === "km" ? "km" : "mi"
     );
 }
+function getConfirmGuessEnabled() {
+    return localStorage.getItem(
+        confirmGuessStorageKey
+    ) === "true";
+}
 
+
+function setConfirmGuessEnabled(enabled) {
+    localStorage.setItem(
+        confirmGuessStorageKey,
+        enabled ? "true" : "false"
+    );
+}
+
+
+if (confirmGuessToggle) {
+    confirmGuessToggle.checked =
+        getConfirmGuessEnabled();
+
+    confirmGuessToggle.addEventListener(
+        "change",
+        function () {
+            setConfirmGuessEnabled(
+                confirmGuessToggle.checked
+            );
+        }
+    );
+}
 
 function defaultStatistics() {
     return {
@@ -2534,6 +2569,11 @@ function startRound() {
     hideResultModal();
 
     guessed = false;
+    pendingGuessLatLng = null;
+
+    confirmGuessButton.classList.add(
+    "hidden"
+);
 
     finalActions.classList.add("hidden");
     viewAllRoundsButton.classList.add("hidden");
@@ -2645,8 +2685,35 @@ map.on(
         ) {
             return;
         }
+if (
+    getConfirmGuessEnabled() &&
+    !event.confirmedGuess
+) {
+    pendingGuessLatLng =
+        event.latlng;
 
+    if (guessMarker) {
+        guessMarker.setLatLng(
+            pendingGuessLatLng
+        );
+    } else {
+        guessMarker =
+            createGuessMarker(
+                pendingGuessLatLng
+            );
+    }
+
+    confirmGuessButton.classList.remove(
+    "hidden"
+);
+
+    return;
+}
         guessed = true;
+
+        confirmGuessButton.classList.add(
+    "hidden"
+);
 
         const answerLatLng =
             L.latLng(
@@ -3569,15 +3636,50 @@ showResultButton.addEventListener(
         showResultModal();
     }
 );
+confirmGuessButton.addEventListener(
+    "click",
+    function () {
+        if (
+            guessed ||
+            !getConfirmGuessEnabled() ||
+            !pendingGuessLatLng
+        ) {
+            return;
+        }
 
+        const confirmedLatLng =
+            pendingGuessLatLng;
+
+        pendingGuessLatLng = null;
+
+        confirmGuessButton.classList.add(
+            "hidden"
+        );
+
+        if (guessMarker) {
+            map.removeLayer(
+                guessMarker
+            );
+
+            guessMarker = null;
+        }
+
+        map.fire(
+            "click",
+            {
+                latlng: confirmedLatLng,
+                confirmedGuess: true
+            }
+        );
+    }
+);
 
 nextButton.addEventListener(
     "click",
     function () {
-        if (!guessed) {
-            return;
-        }
-
+       if (!guessed) {
+    return;
+}
         if (
             gameMode === "draft_test" &&
             round === totalRounds
