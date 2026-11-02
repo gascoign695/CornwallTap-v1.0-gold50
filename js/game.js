@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20261023-confirm-guess1";
+const clientBuildVersion = "20261102-news1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -346,6 +346,20 @@ if (draftTestAvailable && draftTestButton) {
 const statsButton =
     document.getElementById("statsButton");
 
+const newsFeedbackLink =
+    document.getElementById("newsFeedbackLink");
+
+const newsBadge =
+    document.getElementById("newsBadge");
+
+const newsModal =
+    document.getElementById("newsModal");
+
+const newsModalClose =
+    document.getElementById("newsModalClose");
+
+const newsList =
+    document.getElementById("newsList");
 const statsScreen =
     document.getElementById("statsScreen");
 
@@ -3919,6 +3933,121 @@ function hideResultModal() {
     );
 }
 
+let currentLatestNewsKey = "";
 
 updateStartScreen();
 showStartScreen();
+loadNews();
+
+
+
+function latestNewsKey(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return "";
+    }
+
+    const latest = items[0];
+
+    return `${latest.date || ""}|${latest.title || ""}`;
+}
+async function loadNews() {
+    if (!newsList) return;
+
+    try {
+        const response = await fetch("data/news.json", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to load news");
+        }
+
+        const items = await response.json();
+
+        currentLatestNewsKey = latestNewsKey(items);
+
+const seenKey =
+    localStorage.getItem("cornwalltap_latest_news_seen");
+
+if (
+    newsBadge &&
+    currentLatestNewsKey &&
+    seenKey !== currentLatestNewsKey
+) {
+    newsBadge.classList.remove("hidden");
+
+    newsFeedbackLink?.classList.add("has-news");
+}
+
+        if (!Array.isArray(items) || items.length === 0) {
+            newsList.innerHTML =
+                '<p class="news-loading">No updates at the moment.</p>';
+            return;
+        }
+
+        newsList.innerHTML = items.map(item => `
+            <article class="news-item">
+                <div class="news-item-date">${item.date || ""}</div>
+                <h3>${item.title || ""}</h3>
+                <p>${item.message || ""}</p>
+            </article>
+        `).join("");
+
+    } catch (error) {
+        console.error("News load failed:", error);
+
+        newsList.innerHTML =
+            '<p class="news-loading">Latest updates could not be loaded.</p>';
+    }
+}
+
+function openNewsModal(event) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    if (!newsModal) return;
+
+    newsModal.classList.add("visible");
+    newsModal.setAttribute("aria-hidden", "false");
+
+    if (currentLatestNewsKey) {
+    localStorage.setItem(
+        "cornwalltap_latest_news_seen",
+        currentLatestNewsKey
+    );
+
+    newsBadge?.classList.add("hidden");
+    newsFeedbackLink?.classList.remove("has-news");
+}
+    loadNews();
+}
+
+function closeNewsModal() {
+    if (!newsModal) return;
+
+    newsModal.classList.remove("visible");
+    newsModal.setAttribute("aria-hidden", "true");
+}
+
+if (newsFeedbackLink) {
+    newsFeedbackLink.addEventListener("click", openNewsModal);
+}
+
+if (newsModalClose) {
+    newsModalClose.addEventListener("click", closeNewsModal);
+}
+
+if (newsModal) {
+    newsModal.addEventListener("click", event => {
+        if (event.target === newsModal) {
+            closeNewsModal();
+        }
+    });
+}
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && newsModal?.classList.contains("visible")) {
+        closeNewsModal();
+    }
+});

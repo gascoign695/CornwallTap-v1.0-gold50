@@ -238,9 +238,11 @@
 
                 <span aria-hidden="true">·</span>
 
-                <a id="contactLink" href="mailto:hello@cornwalltap.co.uk">
-                    Contact &amp; feedback
-                </a>
+<a id="newsFeedbackLink" href="#">
+    News &amp; feedback
+    <span id="newsBadge" class="news-badge hidden">NEW</span>
+</a>    
+              
             </div>
 
         </div>
@@ -342,7 +344,48 @@
 
 </main>
 
+<div
+    id="newsModal"
+    class="news-modal"
+    aria-hidden="true"
+>
+    <div class="news-modal-content" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
 
+        <button
+            id="newsModalClose"
+            class="news-modal-close"
+            type="button"
+            aria-label="Close news and feedback"
+        >
+            ×
+        </button>
+
+        <div class="eyebrow">CORNWALLTAP UPDATES</div>
+
+        <h2 id="newsModalTitle">News &amp; feedback</h2>
+
+        <div id="newsList" class="news-list">
+            <p class="news-loading">Loading latest updates…</p>
+        </div>
+
+        <div class="news-feedback-box">
+            <h3>Spotted something?</h3>
+
+            <p>
+                Found an inaccurate location, bug or something that could be improved?
+            </p>
+
+            <a href="mailto:hello@cornwalltap.co.uk">
+    Send feedback
+</a>
+
+<div class="news-feedback-email">
+    hello@cornwalltap.co.uk
+</div>
+        </div>
+
+    </div>
+</div>
 <div
     id="resultModal"
     class="result-modal"
@@ -401,7 +444,7 @@
 ></script>
 
 <script src="js/locations.js?v=20261027-locations261"></script>
-<script src="js/game.js?v=20261023-confirm-guess1"></script>
+<script src="js/game.js?v=20261102-news1"></script>
 
 </body>
 
