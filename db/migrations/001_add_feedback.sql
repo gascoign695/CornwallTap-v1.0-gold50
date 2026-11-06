@@ -1,0 +1,7 @@
+CREATE TABLE feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    feedback_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    email TEXT
+);
