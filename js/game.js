@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20261106-report1";
+const clientBuildVersion = "20261106-news-cap1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -4038,7 +4038,7 @@ if (
             return;
         }
 
-        newsList.innerHTML = items.map(item => `
+        newsList.innerHTML = items.slice(0, 5).map(item => `
             <article class="news-item">
                 <div class="news-item-date">${item.date || ""}</div>
                 <h3>${item.title || ""}</h3>
