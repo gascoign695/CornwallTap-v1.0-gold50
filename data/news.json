@@ -1,6 +1,11 @@
 [
   {
   "date": "2026-11-06",
+  "title": "Report a location directly",
+  "message": "You can now report a location straight from the round result or final summary. CornwallTap will automatically include the location name and ID so it’s easier to tell us what needs checking."
+  },
+  {
+  "date": "2026-11-06",
   "title": "Send feedback in CornwallTap",
   "message": "You can now send feedback directly from the News & feedback panel. Report a location issue, bug or suggestion without leaving the game."
   },  
