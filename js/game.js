@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20261102-news1";
+const clientBuildVersion = "20261106-feedback1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -360,6 +360,25 @@ const newsModalClose =
 
 const newsList =
     document.getElementById("newsList");
+
+const feedbackForm =
+    document.getElementById("feedbackForm");
+
+const feedbackType =
+    document.getElementById("feedbackType");
+
+const feedbackMessage =
+    document.getElementById("feedbackMessage");
+
+const feedbackEmail =
+    document.getElementById("feedbackEmail");
+
+const feedbackSubmitButton =
+    document.getElementById("feedbackSubmitButton");
+
+const feedbackStatus =
+    document.getElementById("feedbackStatus");
+
 const statsScreen =
     document.getElementById("statsScreen");
 
@@ -4042,6 +4061,69 @@ if (newsModal) {
     newsModal.addEventListener("click", event => {
         if (event.target === newsModal) {
             closeNewsModal();
+        }
+    });
+}
+
+if (feedbackForm) {
+    feedbackForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (
+            !feedbackType ||
+            !feedbackMessage ||
+            !feedbackEmail ||
+            !feedbackSubmitButton ||
+            !feedbackStatus
+        ) {
+            return;
+        }
+
+        feedbackStatus.textContent = "";
+        feedbackStatus.classList.remove("success", "error");
+
+        feedbackSubmitButton.disabled = true;
+        feedbackSubmitButton.textContent = "Sending...";
+
+        try {
+            const response = await fetch("/api/feedback", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    feedback_type: feedbackType.value,
+                    message: feedbackMessage.value,
+                    email: feedbackEmail.value
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(
+                    data.error || "Feedback submission failed"
+                );
+            }
+
+            feedbackStatus.textContent =
+                "Thanks — your feedback has been sent.";
+
+            feedbackStatus.classList.add("success");
+
+            feedbackForm.reset();
+
+        } catch (error) {
+            console.error("Feedback submission failed:", error);
+
+            feedbackStatus.textContent =
+                "Sorry, your feedback could not be sent. Please try again or use the email link below.";
+
+            feedbackStatus.classList.add("error");
+
+        } finally {
+            feedbackSubmitButton.disabled = false;
+            feedbackSubmitButton.textContent = "Send feedback";
         }
     });
 }

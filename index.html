@@ -56,7 +56,7 @@
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
-    <link rel="stylesheet" href="css/style.css?v=4.8-miles1">
+    <link rel="stylesheet" href="css/style.css?v=20261106-feedback1">
 
 <style>
 /* End-of-game growth CTA */
@@ -369,20 +369,76 @@
         </div>
 
         <div class="news-feedback-box">
-            <h3>Spotted something?</h3>
+    <h3>Spotted something?</h3>
 
-            <p>
-                Found an inaccurate location, bug or something that could be improved?
-            </p>
+    <p>
+        Found an inaccurate location, bug or something that could be improved?
+        Send us a quick message.
+    </p>
 
-            <a href="mailto:hello@cornwalltap.co.uk">
-    Send feedback
-</a>
+    <form id="feedbackForm" class="feedback-form">
 
-<div class="news-feedback-email">
-    hello@cornwalltap.co.uk
+        <label for="feedbackType">
+            What is it about?
+        </label>
+
+        <select id="feedbackType" name="feedback_type" required>
+            <option value="">Choose one</option>
+            <option value="location_issue">Location issue</option>
+            <option value="bug">Bug</option>
+            <option value="suggestion">Suggestion</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="feedbackMessage">
+            Message
+        </label>
+
+        <textarea
+            id="feedbackMessage"
+            name="message"
+            rows="4"
+            maxlength="2000"
+            required
+            placeholder="Tell us what you spotted..."
+        ></textarea>
+
+        <label for="feedbackEmail">
+            Email <span class="feedback-optional">(optional)</span>
+        </label>
+
+        <input
+            id="feedbackEmail"
+            name="email"
+            type="email"
+            maxlength="254"
+            autocomplete="email"
+            placeholder="you@example.com"
+        >
+
+        <button
+            id="feedbackSubmitButton"
+            class="feedback-submit-button"
+            type="submit"
+        >
+            Send feedback
+        </button>
+
+        <div
+            id="feedbackStatus"
+            class="feedback-status"
+            role="status"
+            aria-live="polite"
+        ></div>
+    </form>
+
+    <div class="news-feedback-email">
+        Prefer email?
+        <a href="mailto:hello@cornwalltap.co.uk">
+            hello@cornwalltap.co.uk
+        </a>
+    </div>
 </div>
-        </div>
 
     </div>
 </div>
@@ -444,7 +500,7 @@
 ></script>
 
 <script src="js/locations.js?v=20261027-locations261"></script>
-<script src="js/game.js?v=20261102-news1"></script>
+<script src="js/game.js?v=20261106-feedback1"></script>
 
 </body>
 
