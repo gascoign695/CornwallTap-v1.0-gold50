@@ -11,7 +11,7 @@ development and testing remain easy.
 
 const developerMode = false;
 
-const clientBuildVersion = "20261106-feedback1";
+const clientBuildVersion = "20261106-report1";
 
 const standardTotalRounds = 5;
 let totalRounds = standardTotalRounds;
@@ -2932,6 +2932,15 @@ scoreElement.textContent =
                     ${current.fact}
                 </div>
 
+                <button
+    type="button"
+    class="report-location-button"
+    data-report-location-name="${current.name}"
+    data-report-location-id="${current.id}"
+>
+    Report this location
+</button>
+
                 ${
                     (developerMode || gameMode === "draft_test")
                         ? `
@@ -3006,6 +3015,14 @@ function worstRound() {
     return Math.min(...roundScores);
 }
 
+function locationIdForName(locationName) {
+    const location =
+        locations.find(
+            item => item.name === locationName
+        );
+
+    return location?.id || "";
+}
 
 function journeyHtml(
     locationsList,
@@ -3036,11 +3053,28 @@ function journeyHtml(
                 ${scoresList?.[index] ?? "–"}/100
             </span>
 
-            ${
-                reviewAvailable
-                    ? `<button type="button" class="journey-review-button" data-review-round="${index}">Review</button>`
-                    : ""
-            }
+            <div class="journey-actions">
+    ${
+        reviewAvailable
+            ? `<button
+                type="button"
+                class="journey-review-button"
+                data-review-round="${index}"
+            >
+                Review
+            </button>`
+            : ""
+    }
+
+    <button
+        type="button"
+        class="journey-report-button report-location-button"
+        data-report-location-name="${locationName}"
+        data-report-location-id="${locationIdForName(locationName)}"
+    >
+        Report
+    </button>
+</div>
         </li>
     `).join("");
 
@@ -4127,6 +4161,45 @@ if (feedbackForm) {
         }
     });
 }
+
+resultElement.addEventListener("click", event => {
+    const button =
+        event.target.closest(".report-location-button");
+
+    if (!button) {
+        return;
+    }
+
+    const locationName =
+        button.dataset.reportLocationName || "";
+
+    const locationId =
+        button.dataset.reportLocationId || "";
+
+    if (feedbackType) {
+        feedbackType.value = "location_issue";
+    }
+
+    if (feedbackMessage) {
+        feedbackMessage.value =
+            `Location: ${locationName}` +
+            `${locationId ? ` (ID ${locationId})` : ""}\n\n`;
+    }
+
+    if (feedbackStatus) {
+        feedbackStatus.textContent = "";
+        feedbackStatus.classList.remove(
+            "success",
+            "error"
+        );
+    }
+
+    openNewsModal();
+
+    window.setTimeout(() => {
+        feedbackMessage?.focus();
+    }, 50);
+});
 
 document.addEventListener("keydown", event => {
     if (event.key === "Escape" && newsModal?.classList.contains("visible")) {

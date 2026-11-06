@@ -1915,3 +1915,29 @@ header .brand-wordmark {
 .news-feedback-email {
     margin-top: 12px;
 }
+.report-location-button {
+    margin-top: 12px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #087da4;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.report-location-button:hover,
+.report-location-button:focus-visible {
+    color: var(--deep-sea);
+}
+.journey-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.journey-report-button {
+    margin-top: 0;
+    white-space: nowrap;
+}
