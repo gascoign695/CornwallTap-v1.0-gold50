@@ -484,8 +484,8 @@ const locations = [
 
     {
         id: 33,
-        name: "Sennen Cove",
-        category: "Cove",
+        name: "Sennen Cove Beach",
+        category: "Beach",
         difficulty: 5,
         scoreProfile: "natural_standard",
         lat: 50.08002200,
@@ -3914,6 +3914,336 @@ const locations = [
         fact: "Kelsey Head is a coastal headland west of Crantock, overlooking sandy coves and the Atlantic coast around Holywell Bay.",
         region: "Mid Cornwall",
         parish: "Cubert",
+        verified: true
+    },
+
+    {
+        id: 264,
+        name: "St Tudy",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.55468000,
+        lon: -4.73083000,
+        tolerance: 0.700,
+        fact: "St Tudy is an inland north Cornwall village about five miles south-west of Camelford and six miles north of Bodmin.",
+        region: "North Cornwall",
+        parish: "St Tudy",
+        verified: true
+    },
+
+    {
+        id: 265,
+        name: "St Mabyn",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.52606000,
+        lon: -4.76337000,
+        tolerance: 0.700,
+        fact: "St Mabyn is an inland north Cornwall village around three miles east of Wadebridge and four miles north-west of Bodmin.",
+        region: "North Cornwall",
+        parish: "St Mabyn",
+        verified: true
+    },
+
+    {
+        id: 266,
+        name: "Marhamchurch",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.80555000,
+        lon: -4.52213000,
+        tolerance: 0.700,
+        fact: "Marhamchurch is a village just south of Bude, around two miles south of Stratton and close to Cornwall's north-east coast.",
+        region: "North Cornwall",
+        parish: "Marhamchurch",
+        verified: true
+    },
+
+    {
+        id: 267,
+        name: "Week St Mary",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.75125400,
+        lon: -4.50034700,
+        tolerance: 0.700,
+        fact: "Week St Mary is a small north-east Cornwall village about six miles south of Bude and Stratton.",
+        region: "North Cornwall",
+        parish: "Week St Mary",
+        verified: true
+    },
+
+    {
+        id: 268,
+        name: "Jacobstow",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.73393100,
+        lon: -4.55510000,
+        tolerance: 0.700,
+        fact: "Jacobstow is a small inland north Cornwall village around seven miles south of Bude.",
+        region: "North Cornwall",
+        parish: "Jacobstow",
+        verified: true
+    },
+
+    {
+        id: 269,
+        name: "Poundstock",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.76683400,
+        lon: -4.55101400,
+        tolerance: 0.700,
+        fact: "Poundstock is a small north Cornwall village around four miles south of Bude, close to the Atlantic coast.",
+        region: "North Cornwall",
+        parish: "Poundstock",
+        verified: true
+    },
+
+    {
+        id: 270,
+        name: "Pendeen",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.15175000,
+        lon: -5.66416000,
+        tolerance: 0.800,
+        fact: "Pendeen is a far-west Cornwall village around two miles north-east of St Just, in the historic mining landscape of West Penwith.",
+        region: "West Cornwall",
+        parish: "St Just-in-Penwith",
+        verified: true
+    },
+
+    {
+        id: 271,
+        name: "Madron",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.13305200,
+        lon: -5.56625700,
+        tolerance: 0.700,
+        fact: "Madron is a village around two miles north-west of Penzance and close to the ancient landscape of West Penwith.",
+        region: "West Cornwall",
+        parish: "Madron",
+        verified: true
+    },
+
+    {
+        id: 272,
+        name: "Ludgvan",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.14451200,
+        lon: -5.49373500,
+        tolerance: 0.700,
+        fact: "Ludgvan is a west Cornwall village around two miles north-west of Marazion and three miles north-east of Penzance.",
+        region: "West Cornwall",
+        parish: "Ludgvan",
+        verified: true
+    },
+
+    {
+        id: 273,
+        name: "Crowlas",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.14626900,
+        lon: -5.47915500,
+        tolerance: 0.800,
+        fact: "Crowlas is a west Cornwall village around two miles north of Marazion and three miles north-east of Penzance.",
+        region: "West Cornwall",
+        parish: "Ludgvan",
+        verified: true
+    },
+
+    {
+        id: 274,
+        name: "Gulval",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.13282900,
+        lon: -5.52252700,
+        tolerance: 0.800,
+        fact: "Gulval is a village on the north-eastern edge of Penzance, between the town and the countryside below Ludgvan.",
+        region: "West Cornwall",
+        parish: "Penzance",
+        verified: true
+    },
+
+    {
+        id: 275,
+        name: "Goldsithney",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.12528000,
+        lon: -5.43615000,
+        tolerance: 0.700,
+        fact: "Goldsithney is a west Cornwall village around two miles east of Marazion, inland from Mount's Bay.",
+        region: "West Cornwall",
+        parish: "Perranuthnoe",
+        verified: true
+    },
+
+    {
+        id: 276,
+        name: "Praze-an-Beeble",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.17412000,
+        lon: -5.30957000,
+        tolerance: 0.800,
+        fact: "Praze-an-Beeble is an inland west Cornwall village around three miles south of Camborne.",
+        region: "West Cornwall",
+        parish: "Crowan",
+        verified: true
+    },
+
+    {
+        id: 277,
+        name: "Chacewater",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.25683000,
+        lon: -5.15709000,
+        tolerance: 0.800,
+        fact: "Chacewater is a village between Truro and Redruth, around three miles north-east of Redruth.",
+        region: "Mid Cornwall",
+        parish: "Chacewater",
+        verified: true
+    },
+
+    {
+        id: 278,
+        name: "St Newlyn East",
+        category: "Village",
+        difficulty: 5,
+        scoreProfile: "settlement_standard",
+        lat: 50.36689000,
+        lon: -5.05508000,
+        tolerance: 0.700,
+        fact: "St Newlyn East is an inland village around three miles south of Newquay.",
+        region: "Mid Cornwall",
+        parish: "St Newlyn East",
+        verified: true
+    },
+
+    {
+        id: 279,
+        name: "Cubert",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.37916000,
+        lon: -5.11656000,
+        tolerance: 0.700,
+        fact: "Cubert is an inland north-coast village around three miles south-west of Newquay.",
+        region: "Mid Cornwall",
+        parish: "Cubert",
+        verified: true
+    },
+
+    {
+        id: 280,
+        name: "Ladock",
+        category: "Village",
+        difficulty: 7,
+        scoreProfile: "settlement_standard",
+        lat: 50.31952000,
+        lon: -4.96068000,
+        tolerance: 0.700,
+        fact: "Ladock is an inland village around six miles north-east of Truro and eight miles west of St Austell.",
+        region: "Mid Cornwall",
+        parish: "Ladock",
+        verified: true
+    },
+
+    {
+        id: 281,
+        name: "Dobwalls",
+        category: "Village",
+        difficulty: 4,
+        scoreProfile: "settlement_standard",
+        lat: 50.45786000,
+        lon: -4.51561000,
+        tolerance: 0.800,
+        fact: "Dobwalls is a sizeable village around two miles west of Liskeard on the main route through south-east Cornwall.",
+        region: "East Cornwall",
+        parish: "Dobwalls and Trewidland",
+        verified: true
+    },
+
+    {
+        id: 282,
+        name: "Duloe",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.39973000,
+        lon: -4.48845000,
+        tolerance: 0.700,
+        fact: "Duloe is a village around four miles north-west of Looe and four miles south of Liskeard.",
+        region: "East Cornwall",
+        parish: "Duloe",
+        verified: true
+    },
+
+    {
+        id: 283,
+        name: "Landrake",
+        category: "Village",
+        difficulty: 6,
+        scoreProfile: "settlement_standard",
+        lat: 50.42270000,
+        lon: -4.28959000,
+        tolerance: 0.700,
+        fact: "Landrake is an east Cornwall village around four miles west of Saltash and six miles south of Callington.",
+        region: "East Cornwall",
+        parish: "Landrake with St Erney",
+        verified: true
+    },
+
+    {
+        id: 284,
+        name: "Quethiock",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.45861000,
+        lon: -4.37742000,
+        tolerance: 0.700,
+        fact: "Quethiock is a small inland east Cornwall village around four miles east of Liskeard.",
+        region: "East Cornwall",
+        parish: "Quethiock",
+        verified: true
+    },
+
+    {
+        id: 285,
+        name: "St Keyne",
+        category: "Village",
+        difficulty: 9,
+        scoreProfile: "settlement_standard",
+        lat: 50.42285000,
+        lon: -4.47717000,
+        tolerance: 0.700,
+        fact: "St Keyne is a small village around two miles south of Liskeard and five miles north of Looe.",
+        region: "East Cornwall",
+        parish: "St Keyne and Trewidland",
         verified: true
     }
 ];
