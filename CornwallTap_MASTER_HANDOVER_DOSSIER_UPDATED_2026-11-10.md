@@ -1,11 +1,11 @@
 # CornwallTap — Master Handover Dossier
 
-**Snapshot date:** 29 September 2026  
+**Snapshot date:** 10 November 2026  
 **Purpose:** Canonical working handover for future CornwallTap development conversations.  
 **Repository:** `gascoign695/CornwallTap-v1.0-gold50`  
 **Production site:** `https://cornwalltap.co.uk`  
 **Current production branch:** `main`  
-**Current production code snapshot:** latest `main` commit at the time of this dossier is `0b171d93a45a80aca0cdb1a0430e8faa9e612420` (`fix`, 25 Sep 2026 12:51:55 UTC).
+**Current production code snapshot:** latest deployed `main` as of 10 November 2026 after the settlement expansion to 283 locations and future Daily schedule refresh. Exact commit SHA should be verified from current `main` before any edit.
 
 ---
 
@@ -26,7 +26,7 @@ Before proposing or making a change:
    - `functions/api/version.js` → returned `build`
 
    A mismatch here caused the 25 September 2026 Daily outage. This is now a hard release invariant, not a suggestion.
-7. **Do not trust `tools/check_daily.js` in its current state.** As of this snapshot it is stale and conflicts with the current v6c runtime rules. It must be updated before being used as proof that a future Daily schedule is safe.
+7. **`tools/check_daily.js` maintenance history.** At the original dossier snapshot it was stale and conflicted with current v6c runtime rules. It was subsequently updated on 1 October 2026 to restore the current v6c constants (difficulty bands, exclusions and R4/R5 repeat protection) and merged into `main`. It is a maintenance validation tool only; it is not part of the live game runtime.
 8. **Do not assume Cloudflare Preview has the production D1 binding.** A previous Preview failed with `Cannot read properties of undefined (reading 'prepare')` because the `DB` binding was absent. Preview is still valuable for client/UI/static testing, but D1-backed functionality must be tested with awareness of environment bindings.
 9. **If production breaks badly, rollback first.** Do not stack improvised fixes on top of a broken deployment while hundreds of players are affected.
 10. **Reliability currently outranks feature velocity.** The game is retaining well and the core experience is healthy. Protect the existing audience before adding complexity.
@@ -38,6 +38,348 @@ Before proposing or making a change:
 - **PROJECT CONTEXT:** established in prior CornwallTap work and operational discussion, but not necessarily encoded in the repo.
 - **RECOMMENDATION:** proposed next step, not yet implemented.
 - **UNKNOWN / VERIFY:** not captured reliably enough to assert; inspect the live environment before acting.
+
+---
+
+# CURRENT-STATE OVERRIDE — 10 November 2026
+
+This section supersedes older point-in-time statements elsewhere in the dossier where they conflict. Older sections are intentionally retained as history and rationale.
+
+## Current production status
+
+- Production site: `https://cornwalltap.co.uk`
+- Production branch: `main`
+- Stack remains plain HTML/CSS/JavaScript + Cloudflare Pages + Pages Functions + D1.
+- Mike's practical workflow remains: `main → new branch → small change → local test → Cloudflare Preview → real phone where relevant → merge → production check`.
+- Corporate Windows machine has no Node/npm available. Maintenance tooling intended for Mike to run locally should therefore prefer PowerShell unless there is a deliberate reason to require another runtime.
+- Current `game.js` build token after the 6 November News-cap release: `20261106-news-cap1`.
+- When `game.js` changes, the three-way invariant remains mandatory:
+  1. `js/game.js` → `clientBuildVersion`
+  2. `index.html` → `js/game.js?v=...`
+  3. `functions/api/version.js` → returned `build`
+
+## Location bank and Daily schedule — October + November expansion completed
+
+The earlier 200-location and 261-location snapshots are historical. The current location bank contains **283 locations**.
+
+The October 2026 expansion/recalibration work remains part of the current baseline:
+
+- expanded the master location bank to 261 locations;
+- retained IDs 201–263 except IDs **241 and 247**, which are intentionally absent;
+- returned IDs **45, 46 and 47** to the Daily pool;
+- applied 41 difficulty changes;
+- rebuilt the future Daily schedule from **28 October 2026** onward;
+- preserved every already-live/historical Daily through **27 October 2026**;
+- introduced global **27-day repeat protection by location ID across all rounds**;
+- retained the **15 km minimum separation** within each Daily.
+
+The 10 November 2026 settlement-expansion release then:
+
+- added **22 new verified settlement locations**, IDs **264–285**;
+- brought the live location bank to **283 locations**;
+- kept IDs **241 and 247** intentionally absent;
+- preserved all already-live Daily challenges through **10 November 2026**;
+- regenerated the future authoritative Daily schedule from **11 November 2026** through the existing schedule end date of **2 September 2027**;
+- retained the global **27-day repeat protection by location ID across all rounds**;
+- retained the **15 km minimum separation** within each Daily;
+- retained the round difficulty bands R1 1–2, R2 3–4, R3 5–6, R4 7–8, R5 9–10;
+- verified the regenerated schedule with **0 validation errors** and confirmed all 22 new IDs enter the future rotation;
+- changed ID 33 from **Sennen Cove** / Cove to **Sennen Cove Beach** / Beach while keeping its coordinates, difficulty, profile and tolerance unchanged;
+- corrected final tested coordinates for Poundstock (ID 269), Crowlas (ID 273) and Gulval (ID 274).
+
+Current master CSV remains:
+
+`data/cornwalltap_200_locations_MASTER_v6c_2026-09-03_2.csv`
+
+Despite the legacy filename, it now contains the current 283-location dataset. Do not infer row/location count from the filename.
+
+Important retained coordinate correction from the October batch:
+
+- Mulfra Quoit, ID 256: `50.163361, -5.569337`, tolerance `0.350` km.
+
+Important November coordinate corrections:
+
+- Poundstock, ID 269: `50.766834, -4.551014`;
+- Crowlas, ID 273: `50.146269, -5.479155`;
+- Gulval, ID 274: `50.132829, -5.522527`.
+
+Sennen naming/target clarity is now resolved in the live bank as **Sennen Cove Beach** (ID 33), category **Beach**.
+
+## News & feedback — completed and live
+
+A four-stage News/feedback feature is now fully live.
+
+### 1. Home link + modal
+
+- Footer includes **News & feedback** alongside Facebook.
+- Old duplicate Contact link was removed.
+- Modal ID: `newsModal`.
+- News is loaded from static `data/news.json`.
+- Email fallback remains visible: `hello@cornwalltap.co.uk`.
+
+### 2. NEW/unread behaviour
+
+- New/unread state is stored in localStorage key `cornwalltap_latest_news_seen`.
+- When the newest news item has not been seen, the Home link receives the highlighted state and a **NEW** badge.
+- Opening the News & feedback modal marks the latest item as seen.
+- There is no automatic popup.
+- Unread logic remains based on the full news array/newest item.
+
+### 3. D1-backed feedback form
+
+Live feedback form fields:
+
+- What is it about? (`location_issue`, `bug`, `suggestion`, `other`)
+- Message
+- Email (optional)
+- Send feedback
+
+Endpoint: `functions/api/feedback.js`
+
+Validation:
+
+- POST only;
+- message required;
+- message max 2000 characters;
+- email max 254 characters;
+- allowed feedback types restricted to the four values above.
+
+Successful production write was tested and the test row was deleted afterwards. Preview can still fail valid D1 writes when the Preview environment lacks the `DB` binding; that is an environment limitation, not automatically a code defect.
+
+### 4. Report this location
+
+Players can now report a location directly from:
+
+- the individual round result; and
+- each location row in the final five-location summary.
+
+The report action:
+
+- opens News & feedback;
+- selects `location_issue`;
+- pre-fills the location name and ID;
+- leaves the cursor ready for the player's explanation.
+
+The final-summary implementation deliberately resolves the stored location name back to its ID instead of changing the persisted `roundReviews` schema. This avoided an unnecessary migration risk to existing saved Daily state.
+
+### 5. News list capped to five visible items
+
+On 6 November 2026 the modal was tidied so only the newest **five** news items are rendered:
+
+```js
+items.slice(0, 5).map(...)
+```
+
+All history remains in `data/news.json`; only rendering is capped. This was explicitly tested by adding a temporary sixth local test item, confirming that only five rendered, then removing the test item before release.
+
+Current live news items added on 6 November include:
+
+- **Send feedback in CornwallTap**
+- **Report a location directly**
+
+## Current D1 schema — now captured in the repo
+
+As of 6 November 2026, production application tables are:
+
+### `daily_players`
+
+```sql
+CREATE TABLE daily_players (
+    player_id TEXT PRIMARY KEY,
+    first_daily_date TEXT NOT NULL
+);
+```
+
+### `feedback`
+
+```sql
+CREATE TABLE feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    feedback_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    email TEXT
+);
+```
+
+### `game_events`
+
+```sql
+CREATE TABLE game_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    event_type TEXT NOT NULL,
+    game_mode TEXT,
+    challenge_date TEXT,
+    session_id TEXT,
+    device_type TEXT,
+    final_score INTEGER,
+    duration_seconds INTEGER,
+    round_number INTEGER,
+    location_name TEXT,
+    location_category TEXT,
+    round_score INTEGER,
+    distance_km REAL,
+    player_id TEXT,
+    location_difficulty INTEGER
+);
+```
+
+Cloudflare-managed `_cf_KV` also exists but is **not** application-owned and must not be included in CornwallTap's schema files.
+
+Version-controlled DB documentation added to `main` on 6 November:
+
+- `db/schema.sql` — current application-owned schema snapshot;
+- `db/migrations/001_add_feedback.sql` — records the later addition of the feedback table;
+- `db/README.md` — process for future D1 changes.
+
+Future DB-change rule:
+
+1. inspect the live production schema first;
+2. add a new numbered migration;
+3. update `db/schema.sql` to the intended final state;
+4. apply the migration manually in Cloudflare D1;
+5. verify the live schema afterwards;
+6. never re-run old migrations casually.
+
+## Reliability tooling added on 6 November 2026
+
+### Local three-way build-version guard
+
+File:
+
+`tools/check_build_version.ps1`
+
+Run from the project root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\check_build_version.ps1
+```
+
+It reads and compares:
+
+- `js/game.js` `clientBuildVersion`;
+- `index.html` `js/game.js?v=`;
+- `functions/api/version.js` `build`.
+
+It prints all three values and exits non-zero on missing/mismatched values. Both the PASS and deliberate FAIL paths were tested before merge.
+
+This replaces the older recommendation elsewhere in the dossier to create a Node-based `check_build_version.js`. The PowerShell version is the correct current implementation because Mike's work machine does not have Node/npm.
+
+### Post-deploy production health check
+
+File:
+
+`tools/check_post_deploy.ps1`
+
+Run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\check_post_deploy.ps1
+```
+
+Current checks:
+
+- reaches `https://cornwalltap.co.uk/api/version`;
+- confirms a non-empty live build value;
+- reaches `https://cornwalltap.co.uk/api/daily`;
+- verifies `location_ids` contains exactly **5** IDs.
+
+The actual live `/api/daily` response shape was checked before finalising the script; the location array is `location_ids`, not `locations` or `challenge`.
+
+Both PASS and deliberate FAIL paths were tested before merge. The script does not create fake analytics events.
+
+## Release process — updated practical minimum
+
+For a normal code release:
+
+1. sync latest `main`;
+2. create a branch;
+3. make the smallest isolated change;
+4. local test;
+5. if `game.js` changed, update all three build values;
+6. run `tools/check_build_version.ps1`;
+7. inspect Source Control/diff;
+8. publish branch and test Cloudflare Preview;
+9. test on a real phone when the change touches interaction/state/mobile/caching;
+10. merge and sync `main`;
+11. run `tools/check_post_deploy.ps1`;
+12. perform a quick production smoke test of the changed feature plus one unrelated core path.
+
+The PowerShell tools reduce human-error risk but do **not** replace Preview/mobile/production testing.
+
+## Analytics position — early November 2026
+
+Observed recent Daily audience supplied on 2 November:
+
+| Date | Daily players | New | Returning | Returning share |
+|---|---:|---:|---:|---:|
+| 27 Oct | 566 | 76 | 490 | 86.6% |
+| 28 Oct | 563 | 72 | 491 | 87.2% |
+| 29 Oct | 531 | 45 | 486 | 91.5% |
+| 30 Oct | 507 | 38 | 469 | 92.5% |
+| 31 Oct | 498 | 66 | 432 | 86.7% |
+| 1 Nov | 497 | 45 | 452 | 90.9% |
+| 2 Nov* | 260 | 15 | 245 | 94.2% |
+
+`*` 2 November was a partial-day snapshot.
+
+Strategic interpretation: CornwallTap has settled at roughly **500 Daily players/day**, overwhelmingly returning players. Retention/habit remain strong; new-player acquisition is softer than the retained core.
+
+## Product direction agreed on 6 November
+
+The priority is not to make the five-round Daily longer or more complicated. Keep the daily experience **fair, varied, accurate and occasionally surprising**.
+
+Preferred priority order after today's maintenance work:
+
+1. **Location freshness and quality** — periodically add strong, precise locations and correct naming/coordinate/fact issues. Quality matters more than hitting a numeric location count.
+2. **Reliability tooling** — now substantially improved with build and post-deploy PowerShell checks.
+3. **D1 schema/migrations** — initial version-control work now completed.
+4. **Attributable friend challenge/referral links** — strongest candidate for the next substantive growth feature. Goal is to measure shared-link opens/starts/completions/return without revealing answers or allowing a second scored Daily attempt.
+5. **More “you vs everyone” statistics** — potentially useful later, but add cautiously and watch D1 cost/result-screen clutter.
+6. **Themed/heritage rounds or special events** — parked for later as a separate experience, not a disruption to the normal Daily.
+
+Other items still worth keeping on the backlog:
+
+- Android Chrome map-drag issue, if still reproducible;
+- Sennen naming/target clarity;
+- continued periodic location-bank expansion and quality review;
+- possible future automation/enforcement around release checks, but do not introduce tooling that assumes Node/npm on Mike's machine without a clear benefit.
+
+## Work completed on 10 November 2026 — settlement expansion release log
+
+Completed, tested and merged to `main`:
+
+1. Added 22 new verified settlement locations, IDs 264–285, taking the live bank from 261 to **283 locations**.
+2. Final corrected coordinates were applied for Poundstock (269), Crowlas (273) and Gulval (274) after visual in-game testing.
+3. Renamed ID 33 to **Sennen Cove Beach**, category **Beach**, retaining its existing target coordinates and scoring settings.
+4. Regenerated the authoritative future Daily schedule from **11 November 2026** onward while preserving every Daily through **10 November 2026**.
+5. Future schedule validation passed with the current difficulty bands, **27-day global repeat protection** and **15 km within-Daily separation**, with all 22 new IDs entering rotation.
+6. Bumped the `locations.js` cache-buster in `index.html` to `20261110-locations283`; `game.js` was unchanged and remained on build `20261106-news-cap1`.
+7. Cloudflare Preview checks passed on desktop and a real phone. Preview `/api/daily?date=2026-11-10` returned `[210,44,86,125,117]` unchanged, and 11 November returned `[1,277,187,149,128]` from the regenerated schedule.
+8. Production deployment completed successfully. `tools/check_post_deploy.ps1` passed, and production `/api/daily?date=2026-11-10` was rechecked and confirmed unchanged.
+
+Do not reintroduce the abandoned PowerShell schedule-generator experiment from this session. The live runtime files are clean; `tools/check_daily.js` was reverted to the existing `main` version before release. Any future Windows-native schedule tooling should be designed and tested as a separate maintenance project, not bundled into a location release.
+
+## Work completed on 6 November 2026 — release log
+
+Completed and merged to `main` today:
+
+1. D1-backed News & feedback form.
+2. Report-this-location links from round results and final summary.
+3. Two player-facing news updates describing those features.
+4. News modal rendering cap of latest five updates.
+5. `tools/check_build_version.ps1` local three-way build guard.
+6. `tools/check_post_deploy.ps1` live version/Daily health check.
+7. `db/schema.sql`, `db/migrations/001_add_feedback.sql`, and `db/README.md` for version-controlled D1 documentation.
+
+No further substantive feature work was started after this point. **Friend challenge/referral links are the leading next project, but were deliberately left for another day.**
+
+## First instruction for the next CornwallTap session
+
+Before editing anything, a fresh chat should:
+
+> Treat the latest deployed `main` as code truth and this 10 November dossier as operational context. Confirm current branch/files before changing code. Work one small step at a time. Protect Daily schedule/history, saved player state and location IDs. If `game.js` changes, keep the three build values identical and run `tools/check_build_version.ps1`. After merging to production, run `tools/check_post_deploy.ps1` and smoke-test the changed feature. Do not assume Preview has the production D1 binding. The current location bank is **283**, IDs **264–285** were added on 10 November, ID 33 is now **Sennen Cove Beach**, and the authoritative future Daily schedule was regenerated from **11 November 2026** while preserving all earlier Dailies and retaining 27-day global repeat protection plus 15 km within-Daily separation. News/feedback/report-location remain live. Do not revive the abandoned schedule-generator PowerShell experiment from the 10 November session as part of another release; treat maintenance-tool redesign as a separate project.
 
 ---
 
@@ -564,7 +906,7 @@ R5 goes first because its eligible pool is the smallest. Backtracking allows eas
 - A difficulty recalibration must preserve repeat history by ID.
 - Check tomorrow’s five manually before deployment.
 - Validate every future scheduled day against current location data, bands, exclusions, repeat history and 15 km separation.
-- Replace/update `tools/check_daily.js` before using automated schedule validation.
+- `tools/check_daily.js` was updated on 1 October 2026 for v6c rules and merged into `main`. Future changes should still verify that the checker matches the live selector rules before relying on it.
 
 ---
 
@@ -607,6 +949,35 @@ Current analytics indicate that Practice has strong depth among the people who u
 | 10 | 8 |
 
 R5 has the smallest combined pool (9–10 = 32 before exclusions), which explains why hard-round repeat protection is the tightest scheduling constraint.
+
+## Daily-eligible round pools and expansion priority
+
+With the current 200-location bank and the three Practice-only exclusions (IDs 45, 46 and 47), the Daily-eligible pools are:
+
+| Round | Difficulty band | Eligible locations | Expansion priority |
+|---|---:|---:|---|
+| R1 | 1–2 | 29 | **Highest** |
+| R2 | 3–4 | 41 | Medium |
+| R3 | 5–6 | 53 | Lowest |
+| R4 | 7–8 | 45 | Medium |
+| R5 | 9–10 | 29 | **Highest** |
+
+A previous expansion-planning exercise used roughly 60 locations per round as a useful depth benchmark for reducing the sense of repetition among long-term players. Against that benchmark the indicative shortfalls were approximately R1 +31, R2 +19, R3 +7, R4 +15 and R5 +31. This is a planning guide rather than a selector rule, but it makes the priority clear: **new-location work should favour R1 and R5 first, then R2/R4; R3 already has substantially more depth.**
+
+## Location-selection guardrails
+
+These rules are product decisions and should be treated as constraints for future location-bank expansion, not as ideas to be repeatedly reopened.
+
+- Prefer locations with a **clear, intuitive answer point** that a reasonable player can identify on the map.
+- Avoid very broad geographic areas such as **moors, large estuaries, broad bays, large regions or long stretches of coastline** where there is no obvious single point to tap. Examples already rejected on this basis include using whole-area answers such as Bodmin Moor, the Camel Estuary or Mount's Bay merely to create easy-round variety.
+- **Do not use an arbitrary centroid** simply to make a broad area technically playable. If two informed players could reasonably choose very different points within the named feature, it is probably a poor CornwallTap answer.
+- Broad natural features are acceptable only when there is a genuinely intuitive focal point and the tolerance/score profile can reward a clearly correct tap fairly.
+- Difficulty describes how hard the named place is to locate; it does not excuse an inherently ambiguous target. **Easy does not mean vague.**
+- For R1 especially, think beyond major towns and harbours, but new answers must still be both **recognisable and pinpointable**. Good sources of variety can include famous beaches, distinctive buildings, attractions, bridges, headlands, islands and other precise landmarks.
+- Check every candidate against the existing bank for both **exact duplication and same-place/different-label duplication**. A town, its harbour, its beach and a landmark immediately beside it can be separate valid answers only when each has a genuinely distinct geographic target and adds enough gameplay value.
+- Where multiple worthwhile answers belong to the same immediate area, retain the concept of a **location family** for future Daily scheduling/cooldowns so closely related answers do not create repetitive Dailies.
+- Do not add a candidate merely to hit a numerical pool target. A smaller bank of fair, distinctive locations is preferable to padding a round with weak or ambiguous answers.
+- Before making candidates Live, verify the target coordinate visually, choose a fair tolerance/score profile, and test the marker in the local draft/batch workflow.
 
 ## Region distribution
 
@@ -1549,7 +1920,7 @@ The 25 Sep outage can recur if the three build values diverge.
 
 Implement a script/CI guard before significant feature work.
 
-## 2. `tools/check_daily.js` is stale
+## 2. `tools/check_daily.js` maintenance history (resolved)
 
 **Severity: high if trusted.**
 
@@ -1692,6 +2063,24 @@ The press spike proved external acquisition works. Future work should focus on r
 
 ---
 
+
+
+## Maintenance tooling lesson learned (added 1 October 2026)
+
+Maintenance scripts are separate from the live CornwallTap application. A script may require a different runtime environment from the production stack.
+
+Example: `tools/check_daily.js` is a Node.js utility. The live game does not require Node.js to run because it is plain HTML/CSS/JavaScript served through Cloudflare Pages and Functions. A developer machine may therefore be able to develop and deploy CornwallTap without having Node installed, while still being unable to execute certain maintenance scripts locally.
+
+Important rule:
+
+> Maintenance scripts may have different runtime requirements from the game itself. Do not assume the production stack needs those tools installed.
+
+When a maintenance script cannot be executed locally, distinguish between:
+- validating the underlying logic/data against the production rules; and
+- executing the helper script itself.
+
+Do not block safe maintenance work unnecessarily, but do not claim a script has been run if the runtime is unavailable.
+
 # 24. DO NOT BREAK — protected rules and lessons learned
 
 This is the section a fresh chat should re-read immediately before touching production.
@@ -1721,7 +2110,7 @@ This is the section a fresh chat should re-read immediately before touching prod
 - R1–R3: 19-day recent-ID protection.
 - R4–R5: 16-day recent-ID protection.
 - Current Daily-excluded IDs: 45, 46, 47.
-- Do not trust the stale `tools/check_daily.js` until updated.
+- Do not assume maintenance scripts remain valid forever. `tools/check_daily.js` was corrected on 1 October 2026 after drift from the v6c selector rules was identified.
 
 ## Player state
 
@@ -1945,7 +2334,7 @@ Do this before another substantive release.
 
 Explicitly state all three build values, not only `clientBuildVersion` + `/api/version`.
 
-### 3. Replace/update `tools/check_daily.js`
+### 3. `tools/check_daily.js` update completed (1 October 2026)
 
 Make it validate the actual authoritative schedule and current v6c constraints.
 
@@ -1967,7 +2356,7 @@ Most promising next product project: attributable share/challenge links.
 
 Paste/upload this dossier, then use something like:
 
-> This is the current CornwallTap master handover dossier. Read it before suggesting any change. Treat the latest GitHub `main` as the code truth and this dossier as product/operational context. We work cautiously: branch from latest main, make the smallest possible change, test locally and on Cloudflare Preview/phone, then merge. Never alter the Daily schedule/history, location IDs, saved Daily state or build/version guard casually. Before any `game.js` deployment, verify the three-way build value in `game.js`, `index.html` and `/api/version`. Also note that `tools/check_daily.js` is stale as of this dossier and must not be trusted until updated. First tell me what you believe the current state and safety constraints are before we edit anything.
+> This is the current CornwallTap master handover dossier. Read it before suggesting any change. Treat the latest GitHub `main` as the code truth and this dossier as product/operational context. We work cautiously: branch from latest main, make the smallest possible change, test locally and on Cloudflare Preview/phone, then merge. Never alter the Daily schedule/history, location IDs, saved Daily state or build/version guard casually. Before any `game.js` deployment, verify the three-way build value in `game.js`, `index.html` and `/api/version`. Also note that `tools/check_daily.js` was updated on 1 October 2026 for v6c rules. Treat maintenance scripts as separate tooling with their own runtime requirements. First tell me what you believe the current state and safety constraints are before we edit anything.
 
 That prompt should force a fresh chat to establish the correct operating context before touching production.
 
